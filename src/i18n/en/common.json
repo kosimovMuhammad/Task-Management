@@ -124,5 +124,29 @@
       "relates_to": "Relates to",
       "duplicates": "Duplicates"
     }
+  },
+  "cycles": {
+    "title": "Cycles",
+    "subtitle": "Manage your team's iterative delivery process.",
+    "create": "Create Cycle",
+    "createTitle": "Create cycle",
+    "name": "Cycle Name",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "createError": "Could not create the cycle.",
+    "empty": "No cycles yet. Create your first one to get started.",
+    "activeCycle": "Active Cycle",
+    "upcomingCycles": "Upcoming Cycles",
+    "recentlyCompleted": "Recently Completed",
+    "progress": "Progress",
+    "issues": "Issues",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
+    "status": {
+      "draft": "Draft",
+      "upcoming": "Upcoming",
+      "active": "Active",
+      "completed": "Completed"
+    }
   }
 }

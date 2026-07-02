@@ -124,5 +124,28 @@
       "relates_to": "Алоқаманд бо",
       "duplicates": "Такрор мекунад"
     }
+  },
+  "cycles": {
+    "title": "Давраҳо",
+    "subtitle": "Раванди такрории иҷрои дастаи худро идора кунед.",
+    "create": "Эҷоди давра",
+    "createTitle": "Эҷоди давра",
+    "name": "Номи давра",
+    "startDate": "Санаи оғоз",
+    "endDate": "Санаи анҷом",
+    "createError": "Давра эҷод нашуд.",
+    "empty": "Ҳанӯз давра нест. Аввалинро эҷод кунед.",
+    "activeCycle": "Давраи фаъол",
+    "upcomingCycles": "Давраҳои оянда",
+    "recentlyCompleted": "Ба наздикӣ анҷомёфта",
+    "progress": "Пешрафт",
+    "issues": "Вазифаҳо",
+    "daysRemaining_other": "{{count}} рӯз боқӣ мондааст",
+    "status": {
+      "draft": "Пешнавис",
+      "upcoming": "Оянда",
+      "active": "Фаъол",
+      "completed": "Анҷомёфта"
+    }
   }
 }

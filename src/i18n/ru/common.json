@@ -124,5 +124,31 @@
       "relates_to": "Связано с",
       "duplicates": "Дублирует"
     }
+  },
+  "cycles": {
+    "title": "Циклы",
+    "subtitle": "Управляйте итеративным процессом поставки команды.",
+    "create": "Создать цикл",
+    "createTitle": "Создать цикл",
+    "name": "Название цикла",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
+    "createError": "Не удалось создать цикл.",
+    "empty": "Пока нет циклов. Создайте первый, чтобы начать.",
+    "activeCycle": "Активный цикл",
+    "upcomingCycles": "Предстоящие циклы",
+    "recentlyCompleted": "Недавно завершённые",
+    "progress": "Прогресс",
+    "issues": "Задачи",
+    "daysRemaining_one": "Остался {{count}} день",
+    "daysRemaining_few": "Осталось {{count}} дня",
+    "daysRemaining_many": "Осталось {{count}} дней",
+    "daysRemaining_other": "Осталось {{count}} дней",
+    "status": {
+      "draft": "Черновик",
+      "upcoming": "Предстоящий",
+      "active": "Активный",
+      "completed": "Завершён"
+    }
   }
 }
