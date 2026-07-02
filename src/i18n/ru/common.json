@@ -150,5 +150,38 @@
       "active": "Активный",
       "completed": "Завершён"
     }
+  },
+  "projectSettings": {
+    "general": "Общее",
+    "members": "Участники",
+    "states": "Статусы",
+    "labels": "Метки",
+    "generalTitle": "Общие настройки",
+    "generalSubtitle": "Управляйте идентификацией и видимостью проекта.",
+    "identifierHint": "Идентификатор нельзя изменить после создания проекта.",
+    "archiveProject": "Архивировать проект",
+    "archiveHint": "Архивирование убирает проект из активного списка, но сохраняет все данные.",
+    "saved": "Сохранено.",
+    "membersSubtitle": "Управляйте доступом к этому проекту.",
+    "pickMember": "Выберите участника",
+    "addMember": "Добавить участника",
+    "createState": "Создать статус",
+    "statesSubtitle": "Управляйте статусами, через которые проходят задачи.",
+    "color": "Цвет",
+    "group": "Группа",
+    "default": "По умолчанию",
+    "stateGroup": {
+      "backlog": "Бэклог",
+      "unstarted": "Не начато",
+      "started": "В работе",
+      "completed": "Завершено",
+      "cancelled": "Отменено"
+    },
+    "createLabel": "Создать метку",
+    "labelsSubtitle": "Управляйте метками для категоризации и фильтрации задач.",
+    "issuesCount_one": "{{count}} задача",
+    "issuesCount_few": "{{count}} задачи",
+    "issuesCount_many": "{{count}} задач",
+    "issuesCount_other": "{{count}} задач"
   }
 }

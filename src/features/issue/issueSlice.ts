@@ -55,11 +55,26 @@ function issueUrl({ workspaceSlug, projectId, issueId }: IssueScope) {
   return `${issuesUrl({ workspaceSlug, projectId })}${issueId}`
 }
 
+// The backend's `state`/`priority`/`assignee`/`label` filters accept string | string[], but its
+// validator 400s on a single bare value (ajv oneOf ambiguity) — only an unambiguous array form
+// (bracket key) passes. Suffixing these keys with `[]` forces that form regardless of value count.
+const ARRAY_FILTER_KEYS = new Set(['state', 'priority', 'assignee', 'label'])
+
+function toIssueQueryParams(filters?: IssueFilters): Record<string, unknown> | undefined {
+  if (!filters) return undefined
+  const params: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(filters)) {
+    if (value === undefined) continue
+    params[ARRAY_FILTER_KEYS.has(key) ? `${key}[]` : key] = value
+  }
+  return params
+}
+
 export const fetchIssues = createAsyncThunk(
   'issue/fetchIssues',
   async ({ workspaceSlug, projectId, filters }: ProjectScope & { filters?: IssueFilters }) => {
     const { data } = await apiClient.get<IssueListResponse>(issuesUrl({ workspaceSlug, projectId }), {
-      params: filters,
+      params: toIssueQueryParams(filters),
     })
     return data
   },

@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import authReducer from '@/features/auth/authSlice'
 import uiReducer from '@/features/ui/uiSlice'
 import workspaceReducer from '@/features/workspace/workspaceSlice'
+import workspaceMembersReducer from '@/features/workspace/workspaceMembersSlice'
 import projectReducer from '@/features/project/projectSlice'
 import projectMembersReducer from '@/features/project/projectMembersSlice'
 import stateReducer from '@/features/state/stateSlice'
@@ -14,6 +15,7 @@ export const store = configureStore({
     auth: authReducer,
     ui: uiReducer,
     workspace: workspaceReducer,
+    workspaceMembers: workspaceMembersReducer,
     project: projectReducer,
     projectMembers: projectMembersReducer,
     state: stateReducer,

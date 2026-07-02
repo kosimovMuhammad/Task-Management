@@ -148,5 +148,36 @@
       "active": "Active",
       "completed": "Completed"
     }
+  },
+  "projectSettings": {
+    "general": "General",
+    "members": "Members",
+    "states": "States",
+    "labels": "Labels",
+    "generalTitle": "General Settings",
+    "generalSubtitle": "Manage your project identification and visibility.",
+    "identifierHint": "The identifier can't be changed after the project is created.",
+    "archiveProject": "Archive Project",
+    "archiveHint": "Archiving removes the project from the active list but keeps all data intact.",
+    "saved": "Saved.",
+    "membersSubtitle": "Manage who has access to this project.",
+    "pickMember": "Select a member",
+    "addMember": "Add Member",
+    "createState": "Create State",
+    "statesSubtitle": "Manage the workflow states issues move through.",
+    "color": "Color",
+    "group": "Group",
+    "default": "Default",
+    "stateGroup": {
+      "backlog": "Backlog",
+      "unstarted": "Unstarted",
+      "started": "Started",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "createLabel": "Create Label",
+    "labelsSubtitle": "Manage labels to categorize and filter issues.",
+    "issuesCount_one": "{{count}} issue",
+    "issuesCount_other": "{{count}} issues"
   }
 }
