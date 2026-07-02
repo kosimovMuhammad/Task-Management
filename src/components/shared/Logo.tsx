@@ -48,7 +48,10 @@ export function Logo({ size = 32, showWordmark = true, className }: LogoProps) {
     <div className={cn('flex items-center gap-2.5', className)}>
       <LogoMark size={size} />
       {showWordmark && (
-        <span className="text-lg font-bold tracking-tight text-white">{t('app.name')}</span>
+        // Inherits color from the surrounding context instead of hardcoding it, so this
+        // reads correctly both on always-dark surfaces (AuthPage) and theme-aware ones
+        // (LandingPage, which supports light mode).
+        <span className="text-lg font-bold tracking-tight">{t('app.name')}</span>
       )}
     </div>
   )
