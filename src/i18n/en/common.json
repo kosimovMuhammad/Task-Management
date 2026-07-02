@@ -179,5 +179,33 @@
     "labelsSubtitle": "Manage labels to categorize and filter issues.",
     "issuesCount_one": "{{count}} issue",
     "issuesCount_other": "{{count}} issues"
+  },
+  "userSettings": {
+    "categories": "Categories",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "security": "Security",
+    "workspace": "Workspace",
+    "billing": "Billing",
+    "profileTitle": "Profile Settings",
+    "profileSubtitle": "Manage your public identity and account details.",
+    "avatarUrl": "Avatar URL",
+    "notificationsComingSoon": "Notification preferences aren't available yet.",
+    "emailNotifications": "Email Notifications",
+    "emailNotificationsHint": "Receive daily digests and mention alerts.",
+    "pushNotifications": "Push Notifications",
+    "pushNotificationsHint": "Desktop alerts for real-time task updates.",
+    "weeklyReports": "Weekly Reports",
+    "weeklyReportsHint": "Summaries of your workspace productivity.",
+    "securityComingSoon": "Security settings aren't available yet.",
+    "twoFactor": "2-Factor Auth",
+    "twoFactorHint": "Add an extra layer of security to your account.",
+    "changePassword": "Change Password",
+    "changePasswordHint": "Update your account password.",
+    "activeSessions": "Active Sessions",
+    "activeSessionsHint": "See where you're signed in.",
+    "yourWorkspaces": "Your Workspaces",
+    "workspacesSubtitle": "Workspaces you belong to.",
+    "createWorkspace": "Create workspace"
   }
 }

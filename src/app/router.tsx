@@ -6,8 +6,7 @@ import { AuthenticatedLayout } from '@/app/layouts/AuthenticatedLayout'
 import { WorkspaceScope } from '@/app/layouts/WorkspaceScope'
 import { ProjectLayout } from '@/app/layouts/ProjectLayout'
 
-const LoginPage = lazy(() => import('@/pages/LoginPage'))
-const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
+const AuthPage = lazy(() => import('@/pages/AuthPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 const RootRedirect = lazy(() => import('@/pages/RootRedirect'))
 const CreateWorkspacePage = lazy(() => import('@/pages/CreateWorkspacePage'))
@@ -22,6 +21,11 @@ const ProjectSettingsMembersPage = lazy(() => import('@/pages/ProjectSettingsMem
 const ProjectSettingsStatesPage = lazy(() => import('@/pages/ProjectSettingsStatesPage'))
 const ProjectSettingsLabelsPage = lazy(() => import('@/pages/ProjectSettingsLabelsPage'))
 const UserSettingsPage = lazy(() => import('@/pages/UserSettingsPage'))
+const UserSettingsProfilePage = lazy(() => import('@/pages/UserSettingsProfilePage'))
+const UserSettingsNotificationsPage = lazy(() => import('@/pages/UserSettingsNotificationsPage'))
+const UserSettingsSecurityPage = lazy(() => import('@/pages/UserSettingsSecurityPage'))
+const UserSettingsWorkspacePage = lazy(() => import('@/pages/UserSettingsWorkspacePage'))
+const UserSettingsBillingPage = lazy(() => import('@/pages/UserSettingsBillingPage'))
 
 function SuspenseLayout() {
   return (
@@ -38,8 +42,8 @@ export const router = createBrowserRouter([
       {
         // public shell
         children: [
-          { path: '/login', element: <LoginPage /> },
-          { path: '/register', element: <RegisterPage /> },
+          { path: '/login', element: <AuthPage /> },
+          { path: '/register', element: <AuthPage /> },
         ],
       },
       {
@@ -51,7 +55,18 @@ export const router = createBrowserRouter([
             children: [
               { path: '/', element: <RootRedirect /> },
               { path: '/workspaces/new', element: <CreateWorkspacePage /> },
-              { path: '/settings/*', element: <UserSettingsPage /> },
+              {
+                path: '/settings',
+                element: <UserSettingsPage />,
+                children: [
+                  { index: true, element: <Navigate to="profile" replace /> },
+                  { path: 'profile', element: <UserSettingsProfilePage /> },
+                  { path: 'notifications', element: <UserSettingsNotificationsPage /> },
+                  { path: 'security', element: <UserSettingsSecurityPage /> },
+                  { path: 'workspace', element: <UserSettingsWorkspacePage /> },
+                  { path: 'billing', element: <UserSettingsBillingPage /> },
+                ],
+              },
               {
                 path: '/w/:workspaceSlug',
                 element: <WorkspaceScope />,

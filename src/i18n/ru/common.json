@@ -183,5 +183,33 @@
     "issuesCount_few": "{{count}} задачи",
     "issuesCount_many": "{{count}} задач",
     "issuesCount_other": "{{count}} задач"
+  },
+  "userSettings": {
+    "categories": "Категории",
+    "profile": "Профиль",
+    "notifications": "Уведомления",
+    "security": "Безопасность",
+    "workspace": "Рабочее пространство",
+    "billing": "Оплата",
+    "profileTitle": "Настройки профиля",
+    "profileSubtitle": "Управляйте публичными данными и информацией об аккаунте.",
+    "avatarUrl": "URL аватара",
+    "notificationsComingSoon": "Настройки уведомлений пока недоступны.",
+    "emailNotifications": "Email-уведомления",
+    "emailNotificationsHint": "Получать ежедневные сводки и упоминания.",
+    "pushNotifications": "Push-уведомления",
+    "pushNotificationsHint": "Уведомления на рабочем столе в реальном времени.",
+    "weeklyReports": "Еженедельные отчёты",
+    "weeklyReportsHint": "Сводки продуктивности вашего пространства.",
+    "securityComingSoon": "Настройки безопасности пока недоступны.",
+    "twoFactor": "Двухфакторная аутентификация",
+    "twoFactorHint": "Добавьте дополнительный уровень защиты аккаунта.",
+    "changePassword": "Изменить пароль",
+    "changePasswordHint": "Обновите пароль своего аккаунта.",
+    "activeSessions": "Активные сеансы",
+    "activeSessionsHint": "Посмотрите, где вы вошли в систему.",
+    "yourWorkspaces": "Ваши рабочие пространства",
+    "workspacesSubtitle": "Пространства, в которых вы состоите.",
+    "createWorkspace": "Создать пространство"
   }
 }

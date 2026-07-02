@@ -1,12 +1,15 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router-dom'
 import { FolderKanban, HelpCircle, MessageSquare, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
+import { fetchWorkspaces } from '@/features/workspace/workspaceSlice'
+import type { Workspace } from '@/types/workspace'
 
-function WorkspaceHeader({ slug }: { slug: string | null }) {
+function WorkspaceHeader({ workspace, slug }: { workspace: Workspace | null; slug: string | null }) {
   const { t } = useTranslation()
-  const workspace = useAppSelector((state) => state.workspace.current)
 
   return (
     <Link to={slug ? `/w/${slug}` : '/'} className="flex items-center gap-2 px-1 py-2">
@@ -30,12 +33,23 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 
 export function AppSidebar() {
   const { t } = useTranslation()
-  const workspace = useAppSelector((state) => state.workspace.current)
+  const dispatch = useAppDispatch()
+  const current = useAppSelector((state) => state.workspace.current)
+  const items = useAppSelector((state) => state.workspace.items)
+  // Routes outside /w/:workspaceSlug (e.g. /settings) don't populate `current` — fall back to the
+  // user's first known workspace so the sidebar still shows real branding instead of the generic mark.
+  const workspace = current ?? items[0] ?? null
   const slug = workspace?.slug ?? null
+
+  useEffect(() => {
+    if (!current && items.length === 0) {
+      void dispatch(fetchWorkspaces())
+    }
+  }, [current, items.length, dispatch])
 
   return (
     <aside className="flex h-svh w-64 shrink-0 flex-col border-r border-border bg-card p-3">
-      <WorkspaceHeader slug={slug} />
+      <WorkspaceHeader workspace={workspace} slug={slug} />
 
       <Link
         to={slug ? `/w/${slug}/projects` : '#'}

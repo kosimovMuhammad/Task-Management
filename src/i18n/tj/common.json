@@ -177,5 +177,33 @@
     "createLabel": "Эҷоди тег",
     "labelsSubtitle": "Тегҳоро барои гурӯҳбандӣ ва филтр кардани вазифаҳо идора кунед.",
     "issuesCount_other": "{{count}} вазифа"
+  },
+  "userSettings": {
+    "categories": "Категорияҳо",
+    "profile": "Профил",
+    "notifications": "Огоҳиномаҳо",
+    "security": "Амният",
+    "workspace": "Фазои корӣ",
+    "billing": "Пардохт",
+    "profileTitle": "Танзимоти профил",
+    "profileSubtitle": "Шинохти оммавӣ ва маълумоти ҳисоби худро идора кунед.",
+    "avatarUrl": "URL-и аватар",
+    "notificationsComingSoon": "Танзимоти огоҳиномаҳо ҳанӯз дастрас нест.",
+    "emailNotifications": "Огоҳиномаҳои Email",
+    "emailNotificationsHint": "Хулосаҳои рӯзона ва зикрҳоро гиред.",
+    "pushNotifications": "Огоҳиномаҳои Push",
+    "pushNotificationsHint": "Огоҳиномаҳои real-time дар desktop.",
+    "weeklyReports": "Ҳисоботи ҳафтаворӣ",
+    "weeklyReportsHint": "Хулосаи фаъолнокии фазои кории шумо.",
+    "securityComingSoon": "Танзимоти амният ҳанӯз дастрас нест.",
+    "twoFactor": "Тасдиқи дуфактора",
+    "twoFactorHint": "Ба ҳисоби худ сатҳи иловагии амниятро илова кунед.",
+    "changePassword": "Тағйири рамз",
+    "changePasswordHint": "Рамзи ҳисоби худро навсозӣ кунед.",
+    "activeSessions": "Сессияҳои фаъол",
+    "activeSessionsHint": "Бинед, ки дар куҷо ворид шудаед.",
+    "yourWorkspaces": "Фазоҳои кории шумо",
+    "workspacesSubtitle": "Фазоҳое, ки шумо узви онҳо ҳастед.",
+    "createWorkspace": "Эҷоди фазои корӣ"
   }
 }
