@@ -140,6 +140,7 @@
     "recentlyCompleted": "Ба наздикӣ анҷомёфта",
     "progress": "Пешрафт",
     "issues": "Вазифаҳо",
+    "daysRemaining_one": "{{count}} рӯз боқӣ мондааст",
     "daysRemaining_other": "{{count}} рӯз боқӣ мондааст",
     "status": {
       "draft": "Пешнавис",
@@ -176,6 +177,7 @@
     },
     "createLabel": "Эҷоди тег",
     "labelsSubtitle": "Тегҳоро барои гурӯҳбандӣ ва филтр кардани вазифаҳо идора кунед.",
+    "issuesCount_one": "{{count}} вазифа",
     "issuesCount_other": "{{count}} вазифа"
   },
   "userSettings": {
