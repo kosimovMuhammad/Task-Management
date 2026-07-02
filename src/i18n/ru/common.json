@@ -62,5 +62,17 @@
     "slug": "URL-слаг",
     "createSubmit": "Создать пространство",
     "createError": "Не удалось создать пространство. Попробуйте другой слаг."
+  },
+  "dashboard": {
+    "goodMorning": "Доброе утро",
+    "goodAfternoon": "Добрый день",
+    "goodEvening": "Добрый вечер",
+    "yourProjects": "Ваши проекты",
+    "viewAll": "Все проекты",
+    "createFirstProject": "Создайте первый проект",
+    "recents": "Недавние",
+    "issue": "Задача",
+    "title": "Название",
+    "updated": "Обновлено"
   }
 }

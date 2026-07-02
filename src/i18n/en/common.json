@@ -62,5 +62,17 @@
     "slug": "URL slug",
     "createSubmit": "Create workspace",
     "createError": "Could not create workspace. Try a different slug."
+  },
+  "dashboard": {
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "yourProjects": "Your projects",
+    "viewAll": "View all",
+    "createFirstProject": "Create your first project",
+    "recents": "Recents",
+    "issue": "Issue",
+    "title": "Title",
+    "updated": "Updated"
   }
 }

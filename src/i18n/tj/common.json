@@ -62,5 +62,17 @@
     "slug": "URL-slug",
     "createSubmit": "Эҷоди фазои корӣ",
     "createError": "Фазои корӣ эҷод нашуд. Slug-и дигарро санҷед."
+  },
+  "dashboard": {
+    "goodMorning": "Субҳ ба хайр",
+    "goodAfternoon": "Рӯз ба хайр",
+    "goodEvening": "Бегоҳ ба хайр",
+    "yourProjects": "Лоиҳаҳои шумо",
+    "viewAll": "Ҳамаашро дидан",
+    "createFirstProject": "Лоиҳаи аввалини худро эҷод кунед",
+    "recents": "Охирин",
+    "issue": "Вазифа",
+    "title": "Сарлавҳа",
+    "updated": "Навсозишуда"
   }
 }

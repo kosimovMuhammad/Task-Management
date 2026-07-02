@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
@@ -12,18 +12,20 @@ export function WorkspaceScope() {
   const dispatch = useAppDispatch()
   const current = useAppSelector((state) => state.workspace.current)
   const error = useAppSelector((state) => state.workspace.error)
+  const [projectsReadyFor, setProjectsReadyFor] = useState<string | null>(null)
 
   useEffect(() => {
-    if (workspaceSlug && current?.slug !== workspaceSlug) {
-      void dispatch(fetchWorkspace(workspaceSlug)).then((action) => {
-        if (fetchWorkspace.fulfilled.match(action)) {
-          void dispatch(fetchProjects(workspaceSlug))
-        }
-      })
-    }
-  }, [workspaceSlug, current?.slug, dispatch])
+    if (!workspaceSlug) return
+    if (current?.slug === workspaceSlug && projectsReadyFor === workspaceSlug) return
 
-  if (current?.slug !== workspaceSlug) {
+    void dispatch(fetchWorkspace(workspaceSlug)).then((action) => {
+      if (fetchWorkspace.fulfilled.match(action)) {
+        void dispatch(fetchProjects(workspaceSlug)).finally(() => setProjectsReadyFor(workspaceSlug))
+      }
+    })
+  }, [workspaceSlug, dispatch])
+
+  if (current?.slug !== workspaceSlug || projectsReadyFor !== workspaceSlug) {
     if (error) return <NotFound />
     return <Loader />
   }
