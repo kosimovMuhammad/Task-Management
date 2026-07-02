@@ -1,0 +1,34 @@
+{
+  "app": {
+    "name": "Управление задачами"
+  },
+  "nav": {
+    "dashboard": "Дашборд",
+    "workspaces": "Рабочие пространства",
+    "projects": "Проекты",
+    "issues": "Задачи",
+    "settings": "Настройки",
+    "notifications": "Уведомления"
+  },
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "create": "Создать",
+    "delete": "Удалить",
+    "edit": "Изменить",
+    "loading": "Загрузка...",
+    "logout": "Выйти"
+  },
+  "auth": {
+    "login": "Войти",
+    "register": "Регистрация",
+    "email": "Email",
+    "password": "Пароль"
+  },
+  "errors": {
+    "notFound": "Страница не найдена",
+    "notFoundDescription": "Страница, которую вы ищете, не существует.",
+    "goHome": "На главную",
+    "somethingWentWrong": "Что-то пошло не так"
+  }
+}
