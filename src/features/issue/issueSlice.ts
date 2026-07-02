@@ -224,6 +224,7 @@ const issueSlice = createSlice({
       state.activity = []
       state.relations = null
       state.attachments = []
+      state.error = null
     },
   },
   extraReducers: (builder) => {
@@ -244,6 +245,12 @@ const issueSlice = createSlice({
       })
       .addCase(deleteIssue.fulfilled, (state, action) => {
         state.items = state.items.filter((i) => i.id !== action.payload)
+      })
+      .addCase(fetchIssue.pending, (state) => {
+        state.error = null
+      })
+      .addCase(fetchIssue.rejected, (state, action) => {
+        state.error = action.error.message ?? 'Failed to load issue'
       })
       .addCase(fetchComments.fulfilled, (state, action) => {
         state.comments = action.payload

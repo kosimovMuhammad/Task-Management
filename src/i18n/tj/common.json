@@ -102,5 +102,27 @@
     "medium": "Миёна",
     "high": "Баланд",
     "urgent": "Таъҷилӣ"
+  },
+  "issueDetail": {
+    "comments": "Шарҳҳо",
+    "history": "Таърих",
+    "relations": "Алоқаҳо",
+    "attachments": "Замимаҳо",
+    "addComment": "Шарҳ илова кунед...",
+    "attributes": "Хусусиятҳо",
+    "cycle": "Давра",
+    "labels": "Тегҳо",
+    "noneSet": "Танзим нашуд",
+    "created": "Эҷодшуда",
+    "updated": "Навсозишуда",
+    "estimate": "Баҳодиҳӣ",
+    "uploadFile": "Боркунии файл",
+    "relatedIssueId": "ID-и вазифаи алоқаманд",
+    "relation": {
+      "blocks": "Манъ мекунад",
+      "blocked_by": "Манъшуда аз",
+      "relates_to": "Алоқаманд бо",
+      "duplicates": "Такрор мекунад"
+    }
   }
 }

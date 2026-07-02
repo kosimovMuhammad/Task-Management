@@ -102,5 +102,27 @@
     "medium": "Medium",
     "high": "High",
     "urgent": "Urgent"
+  },
+  "issueDetail": {
+    "comments": "Comments",
+    "history": "History",
+    "relations": "Relations",
+    "attachments": "Attachments",
+    "addComment": "Add a comment...",
+    "attributes": "Attributes",
+    "cycle": "Cycle",
+    "labels": "Labels",
+    "noneSet": "None set",
+    "created": "Created",
+    "updated": "Updated",
+    "estimate": "Estimate",
+    "uploadFile": "Upload file",
+    "relatedIssueId": "Related issue ID",
+    "relation": {
+      "blocks": "Blocks",
+      "blocked_by": "Blocked by",
+      "relates_to": "Relates to",
+      "duplicates": "Duplicates"
+    }
   }
 }

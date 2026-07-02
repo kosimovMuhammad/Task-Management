@@ -102,5 +102,27 @@
     "medium": "Средний",
     "high": "Высокий",
     "urgent": "Срочный"
+  },
+  "issueDetail": {
+    "comments": "Комментарии",
+    "history": "История",
+    "relations": "Связи",
+    "attachments": "Вложения",
+    "addComment": "Добавить комментарий...",
+    "attributes": "Атрибуты",
+    "cycle": "Цикл",
+    "labels": "Метки",
+    "noneSet": "Не задано",
+    "created": "Создано",
+    "updated": "Обновлено",
+    "estimate": "Оценка",
+    "uploadFile": "Загрузить файл",
+    "relatedIssueId": "ID связанной задачи",
+    "relation": {
+      "blocks": "Блокирует",
+      "blocked_by": "Заблокировано",
+      "relates_to": "Связано с",
+      "duplicates": "Дублирует"
+    }
   }
 }
