@@ -1,5 +1,5 @@
 import './AuthPage.css'
-import { useState, useMemo, type FormEvent, useEffect, useRef } from 'react'
+import { useState, useMemo, type FormEvent, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { login, register } from '@/features/auth/authSlice'
+import { LogoMark } from '@/components/shared/Logo'
 
 type AuthMode = 'signin' | 'signup'
 
@@ -28,9 +29,9 @@ export default function AuthPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Determine initial mode from URL
   const initialMode: AuthMode = window.location.pathname.includes('register') ? 'signup' : 'signin'
   const [mode, setMode] = useState<AuthMode>(initialMode)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   // Sign in state
   const [loginEmail, setLoginEmail] = useState('')
@@ -46,7 +47,6 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Animation mount
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true))
@@ -58,7 +58,7 @@ export default function AuthPage() {
     setIsSubmitting(true)
     try {
       await dispatch(login({ email: loginEmail, password: loginPassword })).unwrap()
-      navigate(searchParams.get('redirect') || '/', { replace: true })
+      navigate(searchParams.get('redirect') || '/app', { replace: true })
     } catch {
       setError(t('auth.loginError'))
     } finally {
@@ -83,7 +83,7 @@ export default function AuthPage() {
           invite_token: inviteToken || undefined,
         }),
       ).unwrap()
-      navigate('/', { replace: true })
+      navigate('/app', { replace: true })
     } catch {
       setError(t('auth.registerError'))
     } finally {
@@ -91,34 +91,33 @@ export default function AuthPage() {
     }
   }
 
-  const switchMode = (newMode: AuthMode) => {
-    if (newMode === mode) return
+  const switchMode = useCallback((newMode: AuthMode) => {
+    if (newMode === mode || isAnimating) return
     setError(null)
+    setIsAnimating(true)
     setMode(newMode)
-    // Update URL without reload
     const newPath = newMode === 'signup' ? '/register' : '/login'
     window.history.replaceState(null, '', newPath)
-  }
+    setTimeout(() => setIsAnimating(false), 700)
+  }, [mode, isAnimating])
 
   const isSignUp = mode === 'signup'
 
-  // Pre-compute particle positions so they stay stable across re-renders
   const particles = useMemo(
     () =>
-      Array.from({ length: 30 }, (_, i) => ({
+      Array.from({ length: 20 }, (_, i) => ({
         id: i,
         left: `${(i * 37 + 13) % 100}%`,
         top: `${(i * 53 + 7) % 100}%`,
         delay: `${(i * 0.27) % 8}s`,
         duration: `${6 + (i * 0.43) % 8}s`,
-        size: `${2 + (i * 0.17) % 3}px`,
+        size: `${1.5 + (i * 0.17) % 2}px`,
       })),
     [],
   )
 
   return (
     <div className="auth-page dark">
-      {/* Animated background particles */}
       <div className="auth-bg-particles">
         {particles.map((p) => (
           <div
@@ -140,24 +139,17 @@ export default function AuthPage() {
         {/* Branding Panel */}
         <div className={`auth-brand-panel ${isSignUp ? 'auth-brand-right' : 'auth-brand-left'}`}>
           <div className="auth-brand-content">
-            {/* Logo */}
             <div className="auth-logo">
-              <div className="auth-logo-dot" />
+              <LogoMark size={22} />
               <span>{t('app.name')}</span>
             </div>
 
-            {/* 3D Geometric Shape */}
-            <div className="auth-geo-wrapper">
-              <IcosahedronVisualization />
-            </div>
-
-            {/* Tagline */}
+            {/* Tagline — above globe */}
             <div className="auth-tagline">
               <h2>Ship work, not busywork.</h2>
               <p>Plan, track and deliver across every workspace from one calm, fast command center.</p>
             </div>
 
-            {/* Feature list */}
             <div className="auth-features">
               <div className="auth-feature-item">
                 <CheckCircle2 className="auth-feature-icon" />
@@ -173,6 +165,11 @@ export default function AuthPage() {
               </div>
             </div>
 
+            {/* Globe — below text */}
+            <div className="auth-globe-wrapper">
+              <GlobeVisualization />
+            </div>
+
             <p className="auth-brand-footer">The agile OS your team actually enjoys.</p>
           </div>
         </div>
@@ -180,8 +177,9 @@ export default function AuthPage() {
         {/* Form Panel */}
         <div className={`auth-form-panel ${isSignUp ? 'auth-form-left' : 'auth-form-right'}`}>
           <div className="auth-form-card">
-            {/* Tabs */}
+            {/* Tabs with sliding indicator */}
             <div className="auth-tabs">
+              <div className={`auth-tab-indicator ${isSignUp ? 'auth-tab-indicator-right' : ''}`} />
               <button
                 className={`auth-tab ${mode === 'signin' ? 'auth-tab-active' : ''}`}
                 onClick={() => switchMode('signin')}
@@ -199,7 +197,7 @@ export default function AuthPage() {
             </div>
 
             {/* Form Content */}
-            <div className="auth-form-body">
+            <div className="auth-form-body" key={mode}>
               {mode === 'signin' ? (
                 <>
                   <div className="auth-form-header">
@@ -279,35 +277,38 @@ export default function AuthPage() {
                   </div>
 
                   <form onSubmit={(e) => void handleRegister(e)} className="auth-form">
-                    <div className="auth-field">
-                      <label htmlFor="reg-name">{t('auth.displayName')}</label>
-                      <div className="auth-input-wrap">
-                        <User className="auth-input-icon" />
-                        <Input
-                          id="reg-name"
-                          required
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          placeholder="e.g. Jane Doe"
-                          className="auth-input"
-                        />
+                    {/* Name & Email Side-by-Side */}
+                    <div className="auth-form-row">
+                      <div className="auth-field">
+                        <label htmlFor="reg-name">{t('auth.displayName')}</label>
+                        <div className="auth-input-wrap">
+                          <User className="auth-input-icon" />
+                          <Input
+                            id="reg-name"
+                            required
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            placeholder="Jane Doe"
+                            className="auth-input"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="auth-field">
-                      <label htmlFor="reg-email">{t('auth.emailAddress')}</label>
-                      <div className="auth-input-wrap">
-                        <Mail className="auth-input-icon" />
-                        <Input
-                          id="reg-email"
-                          type="email"
-                          autoComplete="email"
-                          required
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          placeholder="name@company.com"
-                          className="auth-input"
-                        />
+                      <div className="auth-field">
+                        <label htmlFor="reg-email">{t('auth.emailAddress')}</label>
+                        <div className="auth-input-wrap">
+                          <Mail className="auth-input-icon" />
+                          <Input
+                            id="reg-email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            value={regEmail}
+                            onChange={(e) => setRegEmail(e.target.value)}
+                            placeholder="name@team.com"
+                            className="auth-input"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -335,7 +336,6 @@ export default function AuthPage() {
                           {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                         </button>
                       </div>
-                      <p className="auth-hint">{t('auth.passwordHint')}</p>
                     </div>
 
                     <div className="auth-field">
@@ -382,7 +382,7 @@ export default function AuthPage() {
 }
 
 /* ──────────────────────────────────────────────
-   Animated Globe / Geometric Mesh Component
+   Large Animated Globe – Wireframe Sphere Mesh
    ────────────────────────────────────────────── */
 function GlobeVisualization() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -390,7 +390,6 @@ function GlobeVisualization() {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -407,10 +406,10 @@ function GlobeVisualization() {
     resize()
     window.addEventListener('resize', resize)
 
-    // Generate icosahedron-like vertices for a geometric globe
+    // Sphere mesh — latitude/longitude grid
+    const numLat = 14
+    const numLon = 24
     const vertices: [number, number, number][] = []
-    const numLat = 12
-    const numLon = 20
     for (let i = 0; i <= numLat; i++) {
       const lat = (Math.PI * i) / numLat - Math.PI / 2
       for (let j = 0; j < numLon; j++) {
@@ -423,23 +422,25 @@ function GlobeVisualization() {
       }
     }
 
-    // Generate edges connecting nearby vertices
     const edges: [number, number][] = []
     for (let i = 0; i <= numLat; i++) {
       for (let j = 0; j < numLon; j++) {
         const idx = i * numLon + j
-        // horizontal
-        if (j < numLon - 1) edges.push([idx, idx + 1])
-        else edges.push([idx, i * numLon])
-        // vertical
+        // Horizontal rings
+        const next = j < numLon - 1 ? idx + 1 : i * numLon
+        edges.push([idx, next])
+        // Vertical meridians
         if (i < numLat) edges.push([idx, idx + numLon])
-        // diagonal
-        if (i < numLat && j < numLon - 1) edges.push([idx, idx + numLon + 1])
+        // Diagonals for triangulated mesh
+        if (i < numLat) {
+          const diagNext = j < numLon - 1 ? idx + numLon + 1 : (i + 1) * numLon
+          edges.push([idx, diagNext])
+        }
       }
     }
 
     const draw = () => {
-      time += 0.003
+      time += 0.002
       const rect = canvas.getBoundingClientRect()
       const w = rect.width
       const h = rect.height
@@ -447,23 +448,20 @@ function GlobeVisualization() {
 
       const cx = w / 2
       const cy = h / 2
-      const radius = Math.min(w, h) * 0.38
+      const radius = Math.min(w, h) * 0.44
 
       const cosA = Math.cos(time)
       const sinA = Math.sin(time)
-      const cosB = Math.cos(time * 0.7)
-      const sinB = Math.sin(time * 0.7)
+      const cosB = Math.cos(time * 0.6 + 0.5)
+      const sinB = Math.sin(time * 0.6 + 0.5)
 
-      // Project 3D -> 2D with rotation
       const projected = vertices.map(([x, y, z]) => {
-        // Rotate Y
         const x1 = x * cosA - z * sinA
         const z1 = x * sinA + z * cosA
-        // Rotate X
         const y1 = y * cosB - z1 * sinB
         const z2 = y * sinB + z1 * cosB
-        // Perspective
-        const scale = 1 / (1 + z2 * 0.3)
+        const perspective = 3.2
+        const scale = perspective / (perspective + z2)
         return {
           x: cx + x1 * radius * scale,
           y: cy + y1 * radius * scale,
@@ -472,38 +470,51 @@ function GlobeVisualization() {
         }
       })
 
-      // Draw edges
+      // Draw edges with depth-based opacity
       for (const [a, b] of edges) {
         const pa = projected[a]
         const pb = projected[b]
         if (!pa || !pb) continue
         const avgZ = (pa.z + pb.z) / 2
-        const alpha = Math.max(0.03, Math.min(0.35, 0.2 + avgZ * 0.15))
+        const alpha = Math.max(0.015, Math.min(0.3, 0.14 + avgZ * 0.16))
+        const lineW = Math.max(0.3, 0.5 + avgZ * 0.3)
 
         ctx.beginPath()
         ctx.moveTo(pa.x, pa.y)
         ctx.lineTo(pb.x, pb.y)
-        ctx.strokeStyle = `rgba(167, 139, 250, ${alpha})`
-        ctx.lineWidth = 0.6
+        ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`
+        ctx.lineWidth = lineW
         ctx.stroke()
       }
 
-      // Draw vertices as glowing dots
+      // Draw vertices — only bright front-facing ones
       for (const p of projected) {
-        const alpha = Math.max(0.15, Math.min(0.9, 0.5 + p.z * 0.4))
-        const r = 1.2 + p.scale * 1.2
+        if (p.z < -0.3) continue // skip back-facing
+        const alpha = Math.max(0.1, Math.min(0.95, 0.4 + p.z * 0.55))
+        const r = 1 + p.scale * 1.8
 
-        // Glow
+        // Glow halo
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 4)
+        grad.addColorStop(0, `rgba(167, 139, 250, ${alpha * 0.25})`)
+        grad.addColorStop(1, 'rgba(167, 139, 250, 0)')
         ctx.beginPath()
-        ctx.arc(p.x, p.y, r * 2.5, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(167, 139, 250, ${alpha * 0.15})`
+        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2)
+        ctx.fillStyle = grad
         ctx.fill()
 
-        // Dot
+        // Core
         ctx.beginPath()
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(167, 139, 250, ${alpha})`
+        ctx.fillStyle = `rgba(192, 168, 255, ${alpha})`
         ctx.fill()
+
+        // White hot center
+        if (alpha > 0.6) {
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, r * 0.4, 0, Math.PI * 2)
+          ctx.fillStyle = `rgba(255, 255, 255, ${(alpha - 0.6) * 2})`
+          ctx.fill()
+        }
       }
 
       animationId = requestAnimationFrame(draw)

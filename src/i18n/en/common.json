@@ -207,5 +207,40 @@
     "yourWorkspaces": "Your Workspaces",
     "workspacesSubtitle": "Workspaces you belong to.",
     "createWorkspace": "Create workspace"
+  },
+  "landing": {
+    "pill": "Workspaces · Projects · Issues · Cycles",
+    "title1": "Plan the work.",
+    "title2": "Ship the work.",
+    "subtitle": "Task Management brings workspaces, projects, kanban issues and delivery cycles into one fast, real-time workspace for your team.",
+    "ctaPrimary": "Get started free",
+    "ctaSecondary": "I already have an account",
+    "features": {
+      "workspaces": {
+        "title": "Workspaces & Projects",
+        "description": "Organize every team and initiative into workspaces, each holding its own projects with dedicated members and settings."
+      },
+      "issues": {
+        "title": "Kanban Issues",
+        "description": "Track work as issues on a real-time kanban board with custom states, priorities, labels and assignees."
+      },
+      "cycles": {
+        "title": "Cycles & Sprints",
+        "description": "Plan delivery in cycles, watch progress update live as issues move, and review what shipped when."
+      },
+      "realtime": {
+        "title": "Built on a Real API",
+        "description": "Every screen is backed by a real backend — no mock data, with comments, activity history and file attachments."
+      }
+    },
+    "showcase": {
+      "title": "See it in action",
+      "subtitle": "A look at the actual product — every screen below is a real screenshot of the app.",
+      "dashboard": "Dashboard",
+      "kanban": "Issues Kanban",
+      "cycles": "Cycles",
+      "issueDetail": "Issue Detail"
+    },
+    "footerTagline": "Task Management — plan, track and deliver together."
   }
 }

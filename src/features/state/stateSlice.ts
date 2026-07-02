@@ -62,8 +62,17 @@ export const updateState = createAsyncThunk(
 
 export const deleteState = createAsyncThunk(
   'state/deleteState',
-  async ({ workspaceSlug, projectId, stateId }: ProjectScope & { stateId: string }) => {
-    await apiClient.delete(`/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}`)
+  async ({
+    workspaceSlug,
+    projectId,
+    stateId,
+    transferToStateId,
+  }: ProjectScope & { stateId: string; transferToStateId?: string }) => {
+    // The backend's validator requires a JSON object body here even though every field in it
+    // (transfer_to_state_id) is documented as optional — an empty body 400s.
+    await apiClient.delete(`/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}`, {
+      data: { transfer_to_state_id: transferToStateId },
+    })
     return stateId
   },
 )

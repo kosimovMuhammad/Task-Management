@@ -7,6 +7,7 @@ import { WorkspaceScope } from '@/app/layouts/WorkspaceScope'
 import { ProjectLayout } from '@/app/layouts/ProjectLayout'
 
 const AuthPage = lazy(() => import('@/pages/AuthPage'))
+const LandingPage = lazy(() => import('@/pages/LandingPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 const RootRedirect = lazy(() => import('@/pages/RootRedirect'))
 const CreateWorkspacePage = lazy(() => import('@/pages/CreateWorkspacePage'))
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       {
         // public shell
         children: [
+          { path: '/', element: <LandingPage /> },
           { path: '/login', element: <AuthPage /> },
           { path: '/register', element: <AuthPage /> },
         ],
@@ -53,7 +55,7 @@ export const router = createBrowserRouter([
           {
             element: <AuthenticatedLayout />,
             children: [
-              { path: '/', element: <RootRedirect /> },
+              { path: '/app', element: <RootRedirect /> },
               { path: '/workspaces/new', element: <CreateWorkspacePage /> },
               {
                 path: '/settings',
