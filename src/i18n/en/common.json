@@ -74,5 +74,33 @@
     "issue": "Issue",
     "title": "Title",
     "updated": "Updated"
+  },
+  "projects": {
+    "create": "New Project",
+    "createTitle": "Create project",
+    "name": "Project Name",
+    "identifier": "Identifier",
+    "description": "Description",
+    "createError": "Could not create project. Try a different identifier.",
+    "empty": "No projects yet. Create your first one to get started."
+  },
+  "issues": {
+    "newIssue": "New Issue",
+    "createTitle": "Create issue",
+    "titleField": "Title",
+    "state": "State",
+    "priority": "Priority",
+    "noIssues": "No issues",
+    "allPriorities": "All priorities",
+    "searchPlaceholder": "Search issues...",
+    "createError": "Could not create the issue.",
+    "updateError": "Could not update the issue."
+  },
+  "priority": {
+    "none": "No priority",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
   }
 }

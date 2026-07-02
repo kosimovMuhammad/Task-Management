@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
 import { Loader } from '@/components/shared/Loader'
 import { AuthenticatedLayout } from '@/app/layouts/AuthenticatedLayout'
 import { WorkspaceScope } from '@/app/layouts/WorkspaceScope'
+import { ProjectLayout } from '@/app/layouts/ProjectLayout'
 
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
@@ -53,10 +54,20 @@ export const router = createBrowserRouter([
                 children: [
                   { index: true, element: <DashboardPage /> },
                   { path: 'projects', element: <ProjectsListPage /> },
-                  { path: 'p/:projectId/issues', element: <IssuesListPage /> },
-                  { path: 'p/:projectId/issues/:issueId', element: <IssueDetailPage /> },
-                  { path: 'p/:projectId/cycles', element: <CyclesOverviewPage /> },
-                  { path: 'p/:projectId/settings/*', element: <ProjectSettingsPage /> },
+                  {
+                    path: 'p/:projectId',
+                    children: [
+                      {
+                        element: <ProjectLayout />,
+                        children: [
+                          { path: 'issues', element: <IssuesListPage /> },
+                          { path: 'cycles', element: <CyclesOverviewPage /> },
+                          { path: 'settings/*', element: <ProjectSettingsPage /> },
+                        ],
+                      },
+                      { path: 'issues/:issueId', element: <IssueDetailPage /> },
+                    ],
+                  },
                 ],
               },
             ],

@@ -74,5 +74,33 @@
     "issue": "Вазифа",
     "title": "Сарлавҳа",
     "updated": "Навсозишуда"
+  },
+  "projects": {
+    "create": "Лоиҳаи нав",
+    "createTitle": "Эҷоди лоиҳа",
+    "name": "Номи лоиҳа",
+    "identifier": "Идентификатор",
+    "description": "Тавсиф",
+    "createError": "Лоиҳа эҷод нашуд. Идентификатори дигарро санҷед.",
+    "empty": "Ҳанӯз лоиҳае нест. Аввалинро эҷод кунед."
+  },
+  "issues": {
+    "newIssue": "Вазифаи нав",
+    "createTitle": "Эҷоди вазифа",
+    "titleField": "Сарлавҳа",
+    "state": "Ҳолат",
+    "priority": "Аввалият",
+    "noIssues": "Вазифа нест",
+    "allPriorities": "Ҳамаи аввалиятҳо",
+    "searchPlaceholder": "Ҷустуҷӯи вазифаҳо...",
+    "createError": "Вазифа эҷод нашуд.",
+    "updateError": "Вазифа навсозӣ нашуд."
+  },
+  "priority": {
+    "none": "Бе аввалият",
+    "low": "Паст",
+    "medium": "Миёна",
+    "high": "Баланд",
+    "urgent": "Таъҷилӣ"
   }
 }
