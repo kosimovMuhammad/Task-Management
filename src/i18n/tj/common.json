@@ -4,11 +4,17 @@
   },
   "nav": {
     "dashboard": "Дашборд",
-    "workspaces": "Фазои корӣ",
+    "workspace": "Фазои корӣ",
+    "workspaces": "Фазоҳои корӣ",
     "projects": "Лоиҳаҳо",
     "issues": "Вазифаҳо",
+    "cycles": "Давраҳо",
     "settings": "Танзимот",
-    "notifications": "Огоҳиномаҳо"
+    "notifications": "Огоҳиномаҳо",
+    "newProject": "+ Лоиҳаи нав",
+    "search": "Ҷустуҷӯ",
+    "help": "Кӯмак",
+    "feedback": "Пешниҳод"
   },
   "common": {
     "save": "Захира кардан",
@@ -17,7 +23,9 @@
     "delete": "Нест кардан",
     "edit": "Тағйир додан",
     "loading": "Боркунӣ...",
-    "logout": "Баромадан"
+    "logout": "Баромадан",
+    "comingSoon": "Ба зудӣ",
+    "noResults": "Ҳанӯз холӣ аст"
   },
   "auth": {
     "login": "Воридшавӣ",
@@ -30,5 +38,13 @@
     "notFoundDescription": "Саҳифае, ки шумо меҷӯед, вуҷуд надорад.",
     "goHome": "Ба саҳифаи асосӣ",
     "somethingWentWrong": "Хатогӣ рух дод"
+  },
+  "workspace": {
+    "createTitle": "Фазои кориятонро эҷод кунед",
+    "createSubtitle": "Барои ташкили лоиҳаҳо фазои корӣ лозим аст.",
+    "name": "Номи фазои корӣ",
+    "slug": "URL-slug",
+    "createSubmit": "Эҷоди фазои корӣ",
+    "createError": "Фазои корӣ эҷод нашуд. Slug-и дигарро санҷед."
   }
 }

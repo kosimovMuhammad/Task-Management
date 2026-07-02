@@ -21,15 +21,13 @@ const initialState: AuthState = {
 export const login = createAsyncThunk('auth/login', async (payload: LoginPayload) => {
   const { data } = await apiClient.post<AuthTokens>('/auth/login', payload)
   storeTokens(data)
-  const { data: user } = await apiClient.get<User>('/auth/me')
-  return user
+  return data.user
 })
 
 export const register = createAsyncThunk('auth/register', async (payload: RegisterPayload) => {
   const { data } = await apiClient.post<AuthTokens>('/auth/register', payload)
   storeTokens(data)
-  const { data: user } = await apiClient.get<User>('/auth/me')
-  return user
+  return data.user
 })
 
 export const fetchMe = createAsyncThunk('auth/fetchMe', async () => {
@@ -37,10 +35,13 @@ export const fetchMe = createAsyncThunk('auth/fetchMe', async () => {
   return data
 })
 
-export const updateMe = createAsyncThunk('auth/updateMe', async (payload: Partial<User>) => {
-  const { data } = await apiClient.patch<User>('/auth/me', payload)
-  return data
-})
+export const updateMe = createAsyncThunk(
+  'auth/updateMe',
+  async (payload: Partial<Pick<User, 'display_name' | 'avatar_url'>>) => {
+    const { data } = await apiClient.patch<User>('/auth/me', payload)
+    return data
+  },
+)
 
 export const refreshToken = createAsyncThunk('auth/refreshToken', async () => {
   const { refresh_token } = getStoredTokens()

@@ -1,14 +1,17 @@
 export interface User {
   id: string
   email: string
-  first_name?: string
-  last_name?: string
-  avatar_url?: string
+  display_name: string
+  avatar_url?: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface AuthTokens {
   access_token: string
   refresh_token: string
+  user: User
 }
 
 export interface LoginPayload {
@@ -19,6 +22,6 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string
   password: string
-  first_name?: string
-  last_name?: string
+  display_name: string
+  invite_token?: string
 }

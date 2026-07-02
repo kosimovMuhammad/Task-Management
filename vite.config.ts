@@ -6,6 +6,17 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      // Dev-only workaround: the deployed backend has no CORS headers yet,
+      // so route API calls through the Vite dev server (same-origin from the browser's
+      // perspective) instead of hitting it cross-origin directly.
+      '/api/v1': {
+        target: 'https://task-management-backend-2-spya.onrender.com',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@/components': path.resolve(__dirname, './src/components'),

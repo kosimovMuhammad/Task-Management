@@ -4,11 +4,17 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "workspace": "Workspace",
     "workspaces": "Workspaces",
     "projects": "Projects",
     "issues": "Issues",
+    "cycles": "Cycles",
     "settings": "Settings",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "newProject": "+ New Project",
+    "search": "Search",
+    "help": "Help",
+    "feedback": "Feedback"
   },
   "common": {
     "save": "Save",
@@ -17,7 +23,9 @@
     "delete": "Delete",
     "edit": "Edit",
     "loading": "Loading...",
-    "logout": "Log out"
+    "logout": "Log out",
+    "comingSoon": "Coming soon",
+    "noResults": "Nothing here yet"
   },
   "auth": {
     "login": "Log in",
@@ -30,5 +38,13 @@
     "notFoundDescription": "The page you're looking for doesn't exist.",
     "goHome": "Go home",
     "somethingWentWrong": "Something went wrong"
+  },
+  "workspace": {
+    "createTitle": "Create your workspace",
+    "createSubtitle": "You need a workspace to start organizing projects.",
+    "name": "Workspace name",
+    "slug": "URL slug",
+    "createSubmit": "Create workspace",
+    "createError": "Could not create workspace. Try a different slug."
   }
 }
