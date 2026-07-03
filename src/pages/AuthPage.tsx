@@ -59,8 +59,8 @@ export default function AuthPage() {
     try {
       await dispatch(login({ email: loginEmail, password: loginPassword })).unwrap()
       navigate(searchParams.get('redirect') || '/app', { replace: true })
-    } catch {
-      setError(t('auth.loginError'))
+    } catch (err: any) {
+      setError(typeof err === 'string' ? err : err?.message || t('auth.loginError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -84,8 +84,8 @@ export default function AuthPage() {
         }),
       ).unwrap()
       navigate('/app', { replace: true })
-    } catch {
-      setError(t('auth.registerError'))
+    } catch (err: any) {
+      setError(typeof err === 'string' ? err : err?.message || t('auth.registerError'))
     } finally {
       setIsSubmitting(false)
     }
