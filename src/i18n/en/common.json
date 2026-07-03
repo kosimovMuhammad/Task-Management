@@ -67,13 +67,51 @@
     "goodMorning": "Good morning",
     "goodAfternoon": "Good afternoon",
     "goodEvening": "Good evening",
+    "subtitle": "Here's what's happening with your projects today.",
     "yourProjects": "Your projects",
     "viewAll": "View all",
     "createFirstProject": "Create your first project",
     "recents": "Recents",
     "issue": "Issue",
     "title": "Title",
-    "updated": "Updated"
+    "updated": "Updated",
+    "project": "Project",
+    "exportReport": "Export Report",
+    "newTask": "New Task",
+    "stats": {
+      "inProgress": "In Progress",
+      "overdue": "Overdue",
+      "completedThisWeek": "Completed This Week",
+      "assignedToMe": "Assigned to Me"
+    },
+    "trend": {
+      "title": "Task Completion Trend",
+      "subtitle": "Completed issues across all projects",
+      "last30Days": "Last 30 days"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "newTask": "New Task",
+      "newProject": "New Project",
+      "invite": "Invite",
+      "exportReport": "Report"
+    },
+    "upcoming": {
+      "title": "Upcoming",
+      "empty": "Nothing due soon"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "created": "Created issue",
+      "completed": "Completed issue",
+      "columns": {
+        "activity": "Activity",
+        "user": "User",
+        "task": "Target Task",
+        "time": "Time",
+        "status": "Status"
+      }
+    }
   },
   "projects": {
     "create": "New Project",

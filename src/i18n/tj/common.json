@@ -67,13 +67,51 @@
     "goodMorning": "Субҳ ба хайр",
     "goodAfternoon": "Рӯз ба хайр",
     "goodEvening": "Бегоҳ ба хайр",
+    "subtitle": "Инак чӣ дар лоиҳаҳои шумо имрӯз рух медиҳад.",
     "yourProjects": "Лоиҳаҳои шумо",
     "viewAll": "Ҳамаашро дидан",
     "createFirstProject": "Лоиҳаи аввалини худро эҷод кунед",
     "recents": "Охирин",
     "issue": "Вазифа",
     "title": "Сарлавҳа",
-    "updated": "Навсозишуда"
+    "updated": "Навсозишуда",
+    "project": "Лоиҳа",
+    "exportReport": "Ҳисоботро содир кунед",
+    "newTask": "Вазифаи нав",
+    "stats": {
+      "inProgress": "Дар ҷараён",
+      "overdue": "Мӯҳлаташ гузашта",
+      "completedThisWeek": "Дар ин ҳафта иҷрошуда",
+      "assignedToMe": "Ба ман вогузошта"
+    },
+    "trend": {
+      "title": "Тамоюли иҷрои вазифаҳо",
+      "subtitle": "Вазифаҳои иҷрошуда дар ҳамаи лоиҳаҳо",
+      "last30Days": "30 рӯзи охир"
+    },
+    "quickActions": {
+      "title": "Амалҳои зуд",
+      "newTask": "Вазифаи нав",
+      "newProject": "Лоиҳаи нав",
+      "invite": "Даъват",
+      "exportReport": "Ҳисобот"
+    },
+    "upcoming": {
+      "title": "Наздик",
+      "empty": "Ҳеҷ вазифаи наздик нест"
+    },
+    "activity": {
+      "title": "Фаъолияти охирин",
+      "created": "Вазифа эҷод шуд",
+      "completed": "Вазифа иҷро шуд",
+      "columns": {
+        "activity": "Амал",
+        "user": "Корбар",
+        "task": "Вазифа",
+        "time": "Вақт",
+        "status": "Ҳолат"
+      }
+    }
   },
   "projects": {
     "create": "Лоиҳаи нав",

@@ -67,13 +67,51 @@
     "goodMorning": "Доброе утро",
     "goodAfternoon": "Добрый день",
     "goodEvening": "Добрый вечер",
+    "subtitle": "Вот что происходит с вашими проектами сегодня.",
     "yourProjects": "Ваши проекты",
     "viewAll": "Все проекты",
     "createFirstProject": "Создайте первый проект",
     "recents": "Недавние",
     "issue": "Задача",
     "title": "Название",
-    "updated": "Обновлено"
+    "updated": "Обновлено",
+    "project": "Проект",
+    "exportReport": "Экспорт отчёта",
+    "newTask": "Новая задача",
+    "stats": {
+      "inProgress": "В работе",
+      "overdue": "Просрочено",
+      "completedThisWeek": "Завершено за неделю",
+      "assignedToMe": "Назначено мне"
+    },
+    "trend": {
+      "title": "Динамика выполнения задач",
+      "subtitle": "Завершённые задачи по всем проектам",
+      "last30Days": "Последние 30 дней"
+    },
+    "quickActions": {
+      "title": "Быстрые действия",
+      "newTask": "Новая задача",
+      "newProject": "Новый проект",
+      "invite": "Пригласить",
+      "exportReport": "Отчёт"
+    },
+    "upcoming": {
+      "title": "Скоро",
+      "empty": "Нет задач с ближайшим сроком"
+    },
+    "activity": {
+      "title": "Недавняя активность",
+      "created": "Создана задача",
+      "completed": "Завершена задача",
+      "columns": {
+        "activity": "Действие",
+        "user": "Пользователь",
+        "task": "Задача",
+        "time": "Время",
+        "status": "Статус"
+      }
+    }
   },
   "projects": {
     "create": "Новый проект",
