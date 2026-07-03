@@ -1,8 +1,11 @@
-import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet, useParams, useNavigate, useLocation } from 'react-router-dom'
+import { Suspense, useEffect } from 'react'
+import { NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import { Bell, HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
+import { setLastProjectId } from '@/features/ui/uiSlice'
+import { Loader } from '@/components/shared/Loader'
 
 function tabClass({ isActive }: { isActive: boolean }) {
   return cn(
@@ -12,14 +15,15 @@ function tabClass({ isActive }: { isActive: boolean }) {
 }
 
 export function ProjectLayout() {
-  const { t } = useTranslation()
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>()
   const workspace = useAppSelector((state) => state.workspace.current)
   const user = useAppSelector((state) => state.auth.user)
-  
-  // Since we only have 'issues' right now, we map 'Kanban' and 'List' to issues for this replica
-  const location = useLocation()
-  const isKanban = location.pathname.includes('/issues') // Treat issues route as Kanban active for the demo
+
+  useEffect(() => {
+    if (projectId) dispatch(setLastProjectId(projectId))
+  }, [projectId, dispatch])
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -31,33 +35,36 @@ export function ProjectLayout() {
           </h1>
           
           <nav className="flex gap-6">
-            <NavLink to={`/w/${workspaceSlug}/p/${projectId}/list`} className={cn('border-b-2 px-1 pb-4 text-sm font-medium transition-colors cursor-pointer border-transparent text-slate-400 hover:text-slate-200')}>
-              List
-            </NavLink>
             <NavLink to={`/w/${workspaceSlug}/p/${projectId}/issues`} className={tabClass}>
               Kanban
             </NavLink>
-            <NavLink to={`/w/${workspaceSlug}/p/${projectId}/calendar`} className={cn('border-b-2 px-1 pb-4 text-sm font-medium transition-colors cursor-pointer border-transparent text-slate-400 hover:text-slate-200')}>
-              Calendar
+            <NavLink to={`/w/${workspaceSlug}/p/${projectId}/cycles`} className={tabClass}>
+              Cycles
             </NavLink>
-            <NavLink to={`/w/${workspaceSlug}/p/${projectId}/timeline`} className={cn('border-b-2 px-1 pb-4 text-sm font-medium transition-colors cursor-pointer border-transparent text-slate-400 hover:text-slate-200')}>
-              Timeline
+            <NavLink to={`/w/${workspaceSlug}/p/${projectId}/modules`} className={tabClass}>
+              Modules
+            </NavLink>
+            <NavLink to={`/w/${workspaceSlug}/p/${projectId}/settings`} className={tabClass}>
+              Settings
             </NavLink>
           </nav>
         </div>
 
         <div className="flex items-center gap-4 pb-4">
-          <button className="text-slate-400 hover:text-slate-200 transition-colors">
+          <button
+            onClick={() => navigate(`/w/${workspaceSlug}/notifications`)}
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+          >
             <Bell className="size-4" />
           </button>
           <button className="text-slate-400 hover:text-slate-200 transition-colors">
             <HelpCircle className="size-4" />
           </button>
-          <div className="size-6 rounded-full overflow-hidden ml-2">
+          <div className="size-6 rounded-full overflow-hidden ml-2 bg-slate-700 flex items-center justify-center">
             {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="Profile" className="size-full object-cover" />
+              <img src={user.avatar_url} alt={user.display_name} className="size-full object-cover" />
             ) : (
-              <img src="https://i.pravatar.cc/150?img=11" alt="Profile" className="size-full object-cover" />
+              <span className="text-[9px] font-bold text-white">{(user?.display_name ?? '?').slice(0, 2).toUpperCase()}</span>
             )}
           </div>
         </div>
@@ -65,7 +72,9 @@ export function ProjectLayout() {
       
       {/* Main Board Content */}
       <div className="flex-1 overflow-hidden">
-        <Outlet />
+        <Suspense fallback={<Loader />}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   )

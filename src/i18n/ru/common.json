@@ -169,6 +169,20 @@
       "duplicates": "Дублирует"
     }
   },
+  "myTasks": {
+    "title": "Мои задачи",
+    "subtitle": "Всё, что назначено вам в этом рабочем пространстве.",
+    "empty": "Вам пока ничего не назначено.",
+    "open_one": "Открыто ({{count}})",
+    "open_few": "Открыто ({{count}})",
+    "open_many": "Открыто ({{count}})",
+    "open_other": "Открыто ({{count}})",
+    "noOpen": "Все задачи выполнены.",
+    "completed_one": "Завершено ({{count}})",
+    "completed_few": "Завершено ({{count}})",
+    "completed_many": "Завершено ({{count}})",
+    "completed_other": "Завершено ({{count}})"
+  },
   "cycles": {
     "title": "Циклы",
     "subtitle": "Управляйте итеративным процессом поставки команды.",

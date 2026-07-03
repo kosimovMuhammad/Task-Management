@@ -1,7 +1,10 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { AppSidebar } from '@/components/shared/AppSidebar'
 import { TopBar } from '@/components/shared/TopBar'
 import { GlobalSearchModal } from '@/components/shared/GlobalSearchModal'
+import { CreateIssueModal } from '@/components/shared/CreateIssueModal'
+import { Loader } from '@/components/shared/Loader'
 
 export function AuthenticatedLayout() {
   return (
@@ -10,10 +13,13 @@ export function AuthenticatedLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
         <main className="flex-1 overflow-y-auto">
-          <Outlet />
+          <Suspense fallback={<Loader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
       <GlobalSearchModal />
+      <CreateIssueModal />
     </div>
   )
 }

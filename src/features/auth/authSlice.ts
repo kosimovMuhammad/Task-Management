@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { isAxiosError } from 'axios'
 import { apiClient, clearTokens, getStoredTokens, storeTokens } from '@/lib/apiClient'
 import type { AuthTokens, LoginPayload, RegisterPayload, User } from '@/types/auth'
 
@@ -17,8 +18,6 @@ const initialState: AuthState = {
   isLoading: Boolean(getStoredTokens().access_token),
   error: null,
 }
-
-import { isAxiosError } from 'axios'
 
 export const login = createAsyncThunk('auth/login', async (payload: LoginPayload, { rejectWithValue }) => {
   try {
@@ -110,11 +109,11 @@ const authSlice = createSlice({
       )
       .addMatcher(
         (action) => [login.rejected.type, register.rejected.type, fetchMe.rejected.type].includes(action.type),
-        (state, action: any) => {
+        (state, action: { payload?: unknown; error: { message?: string } }) => {
           state.isLoading = false
           state.isAuthenticated = false
           state.user = null
-          state.error = action.payload ?? action.error?.message ?? 'Authentication failed'
+          state.error = (typeof action.payload === 'string' ? action.payload : undefined) ?? action.error.message ?? 'Authentication failed'
         },
       )
   },

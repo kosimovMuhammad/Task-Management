@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Bell, HelpCircle, LogOut, Search, Settings as SettingsIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +17,8 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
 import { logout } from '@/features/auth/authSlice'
+import { setSearchOpen } from '@/features/ui/uiSlice'
+import { fetchNotifications } from '@/features/notification/notificationSlice'
 
 function initials(name: string) {
   return name
@@ -29,7 +32,14 @@ function initials(name: string) {
 export function TopBar() {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
   const user = useAppSelector((state) => state.auth.user)
+  const unreadCount = useAppSelector((state) => state.notification.unreadCount)
+
+  useEffect(() => {
+    if (workspaceSlug) void dispatch(fetchNotifications({ workspaceSlug }))
+  }, [workspaceSlug, dispatch])
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border px-4">
@@ -38,15 +48,30 @@ export function TopBar() {
         <input
           type="search"
           placeholder={t('nav.search')}
-          disabled
-          className="w-full rounded-md border border-input bg-transparent py-1.5 pl-8 pr-3 text-sm text-muted-foreground outline-none disabled:cursor-not-allowed"
+          readOnly
+          onFocus={(e) => {
+            e.target.blur()
+            dispatch(setSearchOpen(true))
+          }}
+          className="w-full cursor-pointer rounded-md border border-input bg-transparent py-1.5 pl-8 pr-3 text-sm text-muted-foreground outline-none"
         />
       </div>
       <div className="flex items-center gap-1">
         <LangSwitcher />
         <ThemeToggle />
-        <Button variant="ghost" size="icon" aria-label={t('nav.notifications')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('nav.notifications')}
+          className="relative"
+          onClick={() => workspaceSlug && navigate(`/w/${workspaceSlug}/notifications`)}
+        >
           <Bell className="size-4" />
+          {unreadCount > 0 && (
+            <span className="absolute right-1 top-1 flex size-3.5 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </Button>
         <Button variant="ghost" size="icon" aria-label={t('nav.help')}>
           <HelpCircle className="size-4" />

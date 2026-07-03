@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
-import { FolderKanban, Plus, Filter, ArrowUpDown, TrendingUp, Bug, Zap } from 'lucide-react'
+import { FolderKanban, Plus, ArrowUpDown, FolderCheck, Archive } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
 import { createProject } from '@/features/project/projectSlice'
+import { fetchWorkspaceMembers } from '@/features/workspace/workspaceMembersSlice'
 
 function identifierFromName(name: string) {
   return name
@@ -67,7 +68,7 @@ function CreateProjectDialog({ workspaceSlug }: { workspaceSlug: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <button className="text-sm font-medium bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm hidden">
+          <button className="text-sm font-medium bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm flex items-center">
             <Plus className="size-4 inline-block mr-1" />
             {t('projects.create')}
           </button>
@@ -123,29 +124,36 @@ function CreateProjectDialog({ workspaceSlug }: { workspaceSlug: string }) {
   )
 }
 
-// Generate deterministic mock data based on project ID so it stays consistent
-function generateMockData(id: string) {
-  const num = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  
-  const leads = [
-    { name: 'Jordan S.', avatar: 'https://i.pravatar.cc/150?img=11' },
-    { name: 'Elena G.', avatar: 'https://i.pravatar.cc/150?img=5' },
-    { name: 'Marcus L.', avatar: 'https://i.pravatar.cc/150?img=33' },
-    { name: 'Sarah K.', avatar: 'https://i.pravatar.cc/150?img=47' },
-  ]
-  const lead = leads[num % leads.length]
-  const progress = 20 + (num % 80) // 20-99%
-  const memberCount = 2 + (num % 8)
-  const isArchived = (num % 10) > 8 // 10% chance to be archived
-  
-  return { lead, progress, memberCount, isArchived }
-}
+type SortMode = 'name' | 'status'
 
 export default function ProjectsListPage() {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
   const projects = useAppSelector((state) => state.project.items)
   const isLoading = useAppSelector((state) => state.project.isLoading)
+  const members = useAppSelector((state) => state.workspaceMembers.items)
+  const [sortMode, setSortMode] = useState<SortMode>('name')
+  const [showArchived, setShowArchived] = useState(true)
+
+  useEffect(() => {
+    if (workspaceSlug && members.length === 0) void dispatch(fetchWorkspaceMembers(workspaceSlug))
+  }, [workspaceSlug, members.length, dispatch])
+
+  const membersById = useMemo(() => new Map(members.map((m) => [m.user_id, m.user])), [members])
+
+  const visibleProjects = useMemo(() => {
+    const filtered = showArchived ? projects : projects.filter((p) => !p.is_archived)
+    return [...filtered].sort((a, b) => {
+      if (sortMode === 'status') {
+        if (a.is_archived !== b.is_archived) return a.is_archived ? 1 : -1
+      }
+      return a.name.localeCompare(b.name)
+    })
+  }, [projects, showArchived, sortMode])
+
+  const activeCount = projects.filter((p) => !p.is_archived).length
+  const archivedCount = projects.length - activeCount
 
   return (
     <div className="flex h-full bg-background flex-col overflow-y-auto">
@@ -160,13 +168,23 @@ export default function ProjectsListPage() {
           </div>
           <div className="flex items-center gap-3">
             {workspaceSlug && <CreateProjectDialog workspaceSlug={workspaceSlug} />}
-            <button className="flex items-center gap-2 text-sm font-medium text-slate-300 bg-white/5 border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors">
-              <Filter className="size-4 text-slate-400" />
-              Filter
+            <button
+              onClick={() => setShowArchived((v) => !v)}
+              className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${
+                showArchived
+                  ? 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20'
+                  : 'text-slate-300 bg-white/5 border-white/10 hover:bg-white/10'
+              }`}
+            >
+              <Archive className="size-4" />
+              {showArchived ? 'Showing archived' : 'Archived hidden'}
             </button>
-            <button className="flex items-center gap-2 text-sm font-medium text-slate-300 bg-white/5 border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors">
+            <button
+              onClick={() => setSortMode((m) => (m === 'name' ? 'status' : 'name'))}
+              className="flex items-center gap-2 text-sm font-medium text-slate-300 bg-white/5 border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
+            >
               <ArrowUpDown className="size-4 text-slate-400" />
-              Sort
+              Sort: {sortMode === 'name' ? 'Name' : 'Status'}
             </button>
           </div>
         </div>
@@ -175,11 +193,9 @@ export default function ProjectsListPage() {
         <div className="rounded-xl border border-white/10 bg-[#1a1a1c] shadow-lg mb-8 overflow-hidden">
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-[#1e1e20] text-[11px] font-bold tracking-widest uppercase text-slate-500">
-            <div className="col-span-4 pl-2">PROJECT NAME</div>
-            <div className="col-span-3">LEAD</div>
-            <div className="col-span-2">STATUS</div>
-            <div className="col-span-2">PROGRESS</div>
-            <div className="col-span-1">MEMBERS</div>
+            <div className="col-span-5 pl-2">PROJECT NAME</div>
+            <div className="col-span-4">LEAD</div>
+            <div className="col-span-3">STATUS</div>
           </div>
 
           {/* Table Body */}
@@ -187,21 +203,19 @@ export default function ProjectsListPage() {
             {isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="grid grid-cols-12 gap-4 p-4 items-center">
-                  <div className="col-span-4"><Skeleton className="h-10 w-full bg-white/5" /></div>
-                  <div className="col-span-3"><Skeleton className="h-8 w-32 bg-white/5" /></div>
-                  <div className="col-span-2"><Skeleton className="h-6 w-16 bg-white/5" /></div>
-                  <div className="col-span-2"><Skeleton className="h-2 w-full bg-white/5" /></div>
-                  <div className="col-span-1"><Skeleton className="h-8 w-16 bg-white/5" /></div>
+                  <div className="col-span-5"><Skeleton className="h-10 w-full bg-white/5" /></div>
+                  <div className="col-span-4"><Skeleton className="h-8 w-32 bg-white/5" /></div>
+                  <div className="col-span-3"><Skeleton className="h-6 w-16 bg-white/5" /></div>
                 </div>
               ))
-            ) : projects.length === 0 ? (
+            ) : visibleProjects.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <FolderKanban className="size-12 text-white/10 mb-4" />
                 <p className="text-sm text-slate-400 mb-4">{t('projects.empty')}</p>
               </div>
             ) : (
-              projects.map((project) => {
-                const mock = generateMockData(project.id)
+              visibleProjects.map((project) => {
+                const lead = project.lead_id ? membersById.get(project.lead_id) : undefined
                 return (
                   <Link
                     key={project.id}
@@ -209,25 +223,39 @@ export default function ProjectsListPage() {
                     className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/[0.02] transition-colors group cursor-pointer"
                   >
                     {/* Name */}
-                    <div className="col-span-4 flex items-center gap-4 pl-2">
+                    <div className="col-span-5 flex items-center gap-4 pl-2">
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
                         <FolderKanban className="size-4" />
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition-colors">{project.name}</p>
-                        <p className="text-[12px] text-slate-500 truncate">{project.description || `${project.identifier} / Core Product`}</p>
+                        <p className="text-[12px] text-slate-500 truncate">{project.description || project.identifier}</p>
                       </div>
                     </div>
 
                     {/* Lead */}
-                    <div className="col-span-3 flex items-center gap-3">
-                      <img src={mock.lead.avatar} alt={mock.lead.name} className="size-6 rounded-full object-cover ring-2 ring-[#1a1a1c]" />
-                      <span className="text-sm text-slate-300 font-medium">{mock.lead.name}</span>
+                    <div className="col-span-4 flex items-center gap-3">
+                      {lead ? (
+                        <>
+                          <div className="size-6 rounded-full overflow-hidden bg-slate-700 shrink-0">
+                            {lead.avatar_url ? (
+                              <img src={lead.avatar_url} alt={lead.display_name} className="size-full object-cover" />
+                            ) : (
+                              <div className="size-full flex items-center justify-center text-[9px] font-bold text-white bg-indigo-500">
+                                {lead.display_name.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-sm text-slate-300 font-medium">{lead.display_name}</span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-slate-500">No lead assigned</span>
+                      )}
                     </div>
 
                     {/* Status */}
-                    <div className="col-span-2 flex items-center">
-                      {mock.isArchived ? (
+                    <div className="col-span-3 flex items-center">
+                      {project.is_archived ? (
                         <span className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-slate-500/10 text-slate-400 border border-slate-500/20">
                           Archived
                         </span>
@@ -237,28 +265,6 @@ export default function ProjectsListPage() {
                         </span>
                       )}
                     </div>
-
-                    {/* Progress */}
-                    <div className="col-span-2 flex items-center gap-3 pr-4">
-                      <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${mock.isArchived ? 'bg-slate-500' : 'bg-indigo-400'}`} 
-                          style={{ width: `${mock.progress}%` }} 
-                        />
-                      </div>
-                      <span className="text-[12px] font-medium text-slate-400 w-8 text-right">{mock.progress}%</span>
-                    </div>
-
-                    {/* Members */}
-                    <div className="col-span-1 flex items-center">
-                      <div className="flex -space-x-2">
-                        <img src="https://i.pravatar.cc/100?img=12" className="size-6 rounded-full object-cover ring-2 ring-[#1a1a1c] z-20" />
-                        <img src="https://i.pravatar.cc/100?img=33" className="size-6 rounded-full object-cover ring-2 ring-[#1a1a1c] z-10" />
-                        <div className="size-6 rounded-full bg-white/10 ring-2 ring-[#1a1a1c] flex items-center justify-center text-[9px] font-bold text-slate-300 z-0">
-                          +{mock.memberCount}
-                        </div>
-                      </div>
-                    </div>
                   </Link>
                 )
               })
@@ -267,42 +273,23 @@ export default function ProjectsListPage() {
         </div>
 
         {/* Metric Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="rounded-xl border border-white/5 bg-[#1a1a1c] p-6 hover:border-white/10 transition-colors">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Velocity</span>
-              <TrendingUp className="size-4 text-indigo-400" />
+              <span className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Active Projects</span>
+              <FolderCheck className="size-4 text-emerald-400" />
             </div>
-            <div className="text-3xl font-extrabold text-slate-100 mb-2">+24%</div>
-            <div className="text-xs text-slate-400">Productivity increase this quarter</div>
+            <div className="text-3xl font-extrabold text-slate-100 mb-2">{activeCount}</div>
+            <div className="text-xs text-slate-400">of {projects.length} total projects</div>
           </div>
-          
-          <div className="rounded-xl border border-white/5 bg-[#1a1a1c] p-6 hover:border-white/10 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Open Issues</span>
-              <Bug className="size-4 text-red-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-slate-100 mb-2">{projects.length > 0 ? (projects.length * 42) : 142}</div>
-            <div className="text-xs text-slate-400">Active tasks across all projects</div>
-          </div>
-          
-          <div className="rounded-xl border border-white/5 bg-[#1a1a1c] p-6 hover:border-white/10 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Resource Usage</span>
-              <Zap className="size-4 text-emerald-400" />
-            </div>
-            <div className="text-3xl font-extrabold text-slate-100 mb-2">88%</div>
-            <div className="text-xs text-slate-400">Efficient team allocation achieved</div>
-          </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between py-6 border-t border-white/5 mt-auto">
-          <p className="text-xs text-slate-500">© 2024 DeepLogic. All rights reserved.</p>
-          <div className="flex items-center gap-6 text-xs text-slate-400">
-            <button className="hover:text-slate-200 transition-colors">Privacy Policy</button>
-            <button className="hover:text-slate-200 transition-colors">Term of Service</button>
-            <button className="hover:text-slate-200 transition-colors">Contact Us</button>
+          <div className="rounded-xl border border-white/5 bg-[#1a1a1c] p-6 hover:border-white/10 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Archived Projects</span>
+              <Archive className="size-4 text-slate-400" />
+            </div>
+            <div className="text-3xl font-extrabold text-slate-100 mb-2">{archivedCount}</div>
+            <div className="text-xs text-slate-400">Hidden from active views</div>
           </div>
         </div>
       </div>

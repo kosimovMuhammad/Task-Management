@@ -12,6 +12,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 const RootRedirect = lazy(() => import('@/pages/RootRedirect'))
 const CreateWorkspacePage = lazy(() => import('@/pages/CreateWorkspacePage'))
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
+const MyTasksPage = lazy(() => import('@/pages/MyTasksPage'))
 const ProjectsListPage = lazy(() => import('@/pages/ProjectsListPage'))
 const IssuesListPage = lazy(() => import('@/pages/IssuesListPage'))
 const IssueDetailPage = lazy(() => import('@/pages/IssueDetailPage'))
@@ -28,6 +29,9 @@ const UserSettingsSecurityPage = lazy(() => import('@/pages/UserSettingsSecurity
 const UserSettingsWorkspacePage = lazy(() => import('@/pages/UserSettingsWorkspacePage'))
 const UserSettingsBillingPage = lazy(() => import('@/pages/UserSettingsBillingPage'))
 const WorkspaceSettingsPage = lazy(() => import('@/pages/WorkspaceSettingsPage'))
+const ModulesPage = lazy(() => import('@/pages/ModulesPage'))
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'))
+const InviteAcceptPage = lazy(() => import('@/pages/InviteAcceptPage'))
 
 function SuspenseLayout() {
   return (
@@ -39,14 +43,15 @@ function SuspenseLayout() {
 
 export const router = createBrowserRouter([
   {
-    element: <SuspenseLayout />,
     children: [
       {
-        // public shell
+        // public shell — its own Suspense since there's no persistent chrome yet
+        element: <SuspenseLayout />,
         children: [
           { path: '/', element: <LandingPage /> },
           { path: '/login', element: <AuthPage /> },
           { path: '/register', element: <AuthPage /> },
+          { path: '/invite/:token', element: <InviteAcceptPage /> },
         ],
       },
       {
@@ -75,9 +80,10 @@ export const router = createBrowserRouter([
                 element: <WorkspaceScope />,
                 children: [
                   { index: true, element: <DashboardPage /> },
-                  { path: 'my-tasks', element: <IssueDetailPage /> },
+                  { path: 'my-tasks', element: <MyTasksPage /> },
                   { path: 'projects', element: <ProjectsListPage /> },
                   { path: 'settings', element: <WorkspaceSettingsPage /> },
+                  { path: 'notifications', element: <NotificationsPage /> },
                   {
                     path: 'p/:projectId',
                     children: [
@@ -86,6 +92,7 @@ export const router = createBrowserRouter([
                         children: [
                           { path: 'issues', element: <IssuesListPage /> },
                           { path: 'cycles', element: <CyclesOverviewPage /> },
+                          { path: 'modules', element: <ModulesPage /> },
                           {
                             path: 'settings',
                             element: <ProjectSettingsPage />,
@@ -108,7 +115,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      { path: '*', element: <NotFoundPage /> },
+      { path: '*', element: <SuspenseLayout />, children: [{ index: true, element: <NotFoundPage /> }] },
     ],
   },
 ])

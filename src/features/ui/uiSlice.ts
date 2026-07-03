@@ -3,10 +3,18 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 export type Theme = 'light' | 'dark'
 export type Locale = 'en' | 'ru' | 'tj'
 
+export interface CreateIssueDefaults {
+  projectId?: string
+  stateId?: string
+}
+
 interface UiState {
   theme: Theme
   locale: Locale
   isSearchOpen: boolean
+  isCreateIssueOpen: boolean
+  createIssueDefaults: CreateIssueDefaults | null
+  lastProjectId: string | null
 }
 
 const THEME_KEY = 'theme'
@@ -28,6 +36,9 @@ const initialState: UiState = {
   theme: getInitialTheme(),
   locale: getInitialLocale(),
   isSearchOpen: false,
+  isCreateIssueOpen: false,
+  createIssueDefaults: null,
+  lastProjectId: null,
 }
 
 const uiSlice = createSlice({
@@ -52,8 +63,28 @@ const uiSlice = createSlice({
     toggleSearch: (state) => {
       state.isSearchOpen = !state.isSearchOpen
     },
+    setCreateIssueOpen: (state, action: PayloadAction<boolean>) => {
+      state.isCreateIssueOpen = action.payload
+      if (!action.payload) state.createIssueDefaults = null
+    },
+    openCreateIssue: (state, action: PayloadAction<CreateIssueDefaults | undefined>) => {
+      state.isCreateIssueOpen = true
+      state.createIssueDefaults = action.payload ?? null
+    },
+    setLastProjectId: (state, action: PayloadAction<string>) => {
+      state.lastProjectId = action.payload
+    },
   },
 })
 
-export const { setTheme, toggleTheme, setLocale, setSearchOpen, toggleSearch } = uiSlice.actions
+export const {
+  setTheme,
+  toggleTheme,
+  setLocale,
+  setSearchOpen,
+  toggleSearch,
+  setCreateIssueOpen,
+  openCreateIssue,
+  setLastProjectId,
+} = uiSlice.actions
 export default uiSlice.reducer

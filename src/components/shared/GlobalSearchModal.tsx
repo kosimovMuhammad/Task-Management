@@ -1,24 +1,51 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Search, User, Clock, CheckCircle2, AlertCircle, LayoutGrid } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
 import { setSearchOpen } from '@/features/ui/uiSlice'
+import { fetchWorkspaceMembers } from '@/features/workspace/workspaceMembersSlice'
 import { formatRelativeTime } from '@/lib/formatRelativeTime'
+import type { Issue } from '@/types/issue'
+import type { Project } from '@/types/project'
+
+const RECENT_SEARCHES_KEY = 'recentSearches'
+
+function loadRecentSearches(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCHES_KEY)
+    return raw ? (JSON.parse(raw) as string[]) : []
+  } catch {
+    return []
+  }
+}
 
 export function GlobalSearchModal() {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>()
   const isOpen = useAppSelector((state) => state.ui.isSearchOpen)
-  
+
   // Real Redux Data
   const allIssues = useAppSelector((state) => state.issue.items)
   const allProjects = useAppSelector((state) => state.project.items)
-  const allMembers = useAppSelector((state) => state.workspace.members)
+  const allMembers = useAppSelector((state) => state.workspaceMembers.items)
   const currentUser = useAppSelector((state) => state.auth.user)
 
   const [query, setQuery] = useState('')
+  const [assignedToMe, setAssignedToMe] = useState(false)
+  const [inProgressOnly, setInProgressOnly] = useState(false)
+  const [inThisProject, setInThisProject] = useState(false)
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecentSearches())
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isOpen && workspaceSlug && allMembers.length === 0) {
+      void dispatch(fetchWorkspaceMembers(workspaceSlug))
+    }
+  }, [isOpen, workspaceSlug, allMembers.length, dispatch])
 
   // Listen for Cmd+K globally
   useEffect(() => {
@@ -46,11 +73,53 @@ export function GlobalSearchModal() {
 
   if (!isOpen) return null
 
-  // Filter Data based on query
+  // Filter Data based on query + quick filters
   const q = query.toLowerCase()
-  const filteredIssues = q ? allIssues.filter(i => i.title.toLowerCase().includes(q)) : allIssues.slice(0, 2)
-  const filteredProjects = q ? allProjects.filter(p => p.name.toLowerCase().includes(q)) : allProjects.slice(0, 2)
-  const filteredMembers = q ? allMembers.filter(m => m.user?.display_name?.toLowerCase().includes(q)) : allMembers.slice(0, 2)
+  let scopedIssues = allIssues
+  if (assignedToMe && currentUser) {
+    scopedIssues = scopedIssues.filter((i) => i.assignees?.some((a) => a.id === currentUser.id))
+  }
+  if (inProgressOnly) {
+    scopedIssues = scopedIssues.filter((i) => !i.completed_at)
+  }
+  if (inThisProject && projectId) {
+    scopedIssues = scopedIssues.filter((i) => i.project_id === projectId)
+  }
+  const filteredIssues = q ? scopedIssues.filter((i: Issue) => i.title.toLowerCase().includes(q)) : scopedIssues.slice(0, 5)
+  const filteredProjects = q ? allProjects.filter((p: Project) => p.name.toLowerCase().includes(q)) : allProjects.slice(0, 2)
+  const filteredMembers = q
+    ? allMembers.filter((m) => m.user?.display_name?.toLowerCase().includes(q))
+    : allMembers.slice(0, 2)
+  const hasActiveQuickFilter = assignedToMe || inProgressOnly || inThisProject
+
+  function close() {
+    dispatch(setSearchOpen(false))
+  }
+
+  function commitSearch(value: string) {
+    const trimmed = value.trim()
+    if (!trimmed) return
+    const next = [trimmed, ...recentSearches.filter((s) => s !== trimmed)].slice(0, 5)
+    setRecentSearches(next)
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next))
+  }
+
+  function clearRecentSearches() {
+    setRecentSearches([])
+    localStorage.removeItem(RECENT_SEARCHES_KEY)
+  }
+
+  function goToIssue(issue: Issue) {
+    if (!workspaceSlug) return
+    navigate(`/w/${workspaceSlug}/p/${issue.project_id}/issues/${issue.id}`)
+    close()
+  }
+
+  function goToProject(project: Project) {
+    if (!workspaceSlug) return
+    navigate(`/w/${workspaceSlug}/p/${project.id}/issues`)
+    close()
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] bg-black/60 backdrop-blur-sm p-4">
@@ -66,6 +135,9 @@ export function GlobalSearchModal() {
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitSearch(query)
+              }}
               placeholder="Search issues, projects, members..."
               className="w-full h-14 pl-12 pr-12 bg-transparent border border-white/10 rounded-lg text-lg text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.1)] transition-all"
             />
@@ -80,15 +152,38 @@ export function GlobalSearchModal() {
           <div className="w-64 shrink-0 border-r border-white/5 p-6 flex flex-col">
             <h3 className="text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-4">Quick Filters</h3>
             <div className="space-y-1 mb-auto">
-              <button className="w-full flex items-center gap-3 px-3 py-2 text-[13px] text-slate-300 rounded-md hover:bg-white/5 transition-colors text-left">
+              <button
+                onClick={() => setAssignedToMe((v) => !v)}
+                className={`w-full flex items-center gap-3 px-3 py-2 text-[13px] rounded-md transition-colors text-left ${assignedToMe ? 'bg-indigo-500/10 text-indigo-300' : 'text-slate-300 hover:bg-white/5'}`}
+              >
                 <User className="size-4 text-slate-400" /> Assigned to me
               </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2 text-[13px] text-slate-300 rounded-md hover:bg-white/5 transition-colors text-left">
+              <button
+                onClick={() => setInProgressOnly((v) => !v)}
+                className={`w-full flex items-center gap-3 px-3 py-2 text-[13px] rounded-md transition-colors text-left ${inProgressOnly ? 'bg-indigo-500/10 text-indigo-300' : 'text-slate-300 hover:bg-white/5'}`}
+              >
                 <div className="size-4 flex items-center justify-center"><div className="size-2 rounded-full border-2 border-slate-400 border-t-indigo-400 transform rotate-45"></div></div> In Progress
               </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2 text-[13px] text-slate-300 rounded-md hover:bg-white/5 transition-colors text-left">
-                <LayoutGrid className="size-4 text-slate-400" /> In this project
-              </button>
+              {projectId && (
+                <button
+                  onClick={() => setInThisProject((v) => !v)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-[13px] rounded-md transition-colors text-left ${inThisProject ? 'bg-indigo-500/10 text-indigo-300' : 'text-slate-300 hover:bg-white/5'}`}
+                >
+                  <LayoutGrid className="size-4 text-slate-400" /> In this project
+                </button>
+              )}
+              {hasActiveQuickFilter && (
+                <button
+                  onClick={() => {
+                    setAssignedToMe(false)
+                    setInProgressOnly(false)
+                    setInThisProject(false)
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-[12px] text-slate-500 hover:text-slate-300 transition-colors text-left"
+                >
+                  Reset filters
+                </button>
+              )}
             </div>
             
             {/* Pro Tip */}
@@ -106,19 +201,22 @@ export function GlobalSearchModal() {
           {/* Right Column: Results */}
           <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-8">
             
-            {!query && (
+            {!query && recentSearches.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Recent Searches</h3>
-                  <button className="text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors">Clear all</button>
+                  <button onClick={clearRecentSearches} className="text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors">Clear all</button>
                 </div>
-                <div className="flex gap-2">
-                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-[12px] text-slate-300 hover:bg-white/10 transition-colors">
-                    <Clock className="size-3 text-slate-400" /> api endpoint auth
-                  </button>
-                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-[12px] text-slate-300 hover:bg-white/10 transition-colors">
-                    <Clock className="size-3 text-slate-400" /> onboarding flow
-                  </button>
+                <div className="flex flex-wrap gap-2">
+                  {recentSearches.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setQuery(s)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-[12px] text-slate-300 hover:bg-white/10 transition-colors"
+                    >
+                      <Clock className="size-3 text-slate-400" /> {s}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -128,30 +226,41 @@ export function GlobalSearchModal() {
               <div>
                 <h3 className="text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">Issues</h3>
                 <div className="space-y-1">
-                  {filteredIssues.map((issue, idx) => (
-                    <div key={issue.id} className="flex gap-4 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group">
-                      <div className="mt-0.5 shrink-0">
-                        {idx % 2 === 0 ? (
-                          <AlertCircle className="size-4 text-orange-400" />
-                        ) : (
-                          <CheckCircle2 className="size-4 text-emerald-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[13px] font-medium text-slate-200 truncate">{issue.title}</span>
-                          <span className="text-[11px] text-slate-500 group-hover:text-slate-400">LOG-{issue.sequence_id}</span>
+                  {filteredIssues.map((issue) => {
+                    const issueProject = allProjects.find((p) => p.id === issue.project_id)
+                    return (
+                      <div
+                        key={issue.id}
+                        onClick={() => goToIssue(issue)}
+                        className="flex gap-4 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group"
+                      >
+                        <div className="mt-0.5 shrink-0">
+                          {issue.completed_at ? (
+                            <CheckCircle2 className="size-4 text-emerald-400" />
+                          ) : (
+                            <AlertCircle className="size-4 text-orange-400" />
+                          )}
                         </div>
-                        <p className="text-[12px] text-slate-400 truncate mb-2">
-                          {issue.description || 'No description provided.'}
-                        </p>
-                        <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                          <span className="flex items-center gap-1.5"><LayoutGrid className="size-3" /> {issue.project_id ? 'Infrastructure' : 'Design'}</span>
-                          <span><Clock className="size-3 inline mr-1" /> Updated {formatRelativeTime(issue.updated_at, i18n.language)}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[13px] font-medium text-slate-200 truncate">{issue.title}</span>
+                            <span className="text-[11px] text-slate-500 group-hover:text-slate-400">
+                              {issueProject?.identifier ?? 'ISSUE'}-{issue.sequence_id}
+                            </span>
+                          </div>
+                          <p className="text-[12px] text-slate-400 truncate mb-2">
+                            {issue.description || 'No description provided.'}
+                          </p>
+                          <div className="flex items-center gap-3 text-[11px] text-slate-500">
+                            {issueProject && (
+                              <span className="flex items-center gap-1.5"><LayoutGrid className="size-3" /> {issueProject.name}</span>
+                            )}
+                            <span><Clock className="size-3 inline mr-1" /> Updated {formatRelativeTime(issue.updated_at, i18n.language)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -164,13 +273,17 @@ export function GlobalSearchModal() {
                   <h3 className="text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">Projects</h3>
                   <div className="space-y-1">
                     {filteredProjects.map((proj) => (
-                      <div key={proj.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors">
-                        <div className={`size-8 rounded flex items-center justify-center text-xs font-bold text-white ${proj.name.includes('Core') ? 'bg-orange-600' : 'bg-indigo-600'}`}>
+                      <div
+                        key={proj.id}
+                        onClick={() => goToProject(proj)}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
+                      >
+                        <div className="size-8 rounded flex items-center justify-center text-xs font-bold text-white bg-indigo-600">
                           {proj.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[13px] font-medium text-slate-200">{proj.name}</span>
-                          <span className="text-[11px] text-slate-500">{proj.identifier} Services</span>
+                          <span className="text-[11px] text-slate-500">{proj.identifier}</span>
                         </div>
                       </div>
                     ))}
@@ -184,7 +297,7 @@ export function GlobalSearchModal() {
                   <h3 className="text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">Members</h3>
                   <div className="space-y-1">
                     {filteredMembers.map((member) => (
-                      <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors">
+                      <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors">
                         <div className="size-8 rounded-full overflow-hidden bg-slate-700">
                           {member.user?.avatar_url ? (
                             <img src={member.user.avatar_url} alt="Profile" className="size-full object-cover" />

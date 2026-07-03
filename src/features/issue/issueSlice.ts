@@ -313,6 +313,7 @@ const issueSlice = createSlice({
           state.current = action.payload
           const idx = state.items.findIndex((i) => i.id === action.payload.id)
           if (idx >= 0) state.items[idx] = action.payload
+          else state.items.push(action.payload)
         },
       )
   },

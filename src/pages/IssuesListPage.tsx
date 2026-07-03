@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Plus, Search, Filter, User, Tag, Calendar, ChevronUp, ChevronRight, ChevronsUp, AlertCircle, Circle, ArrowUp } from 'lucide-react'
+import { Plus, Search, Filter, User, Tag, Calendar, ChevronUp, ChevronRight, ChevronsUp, AlertCircle, Circle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
 import { fetchStates } from '@/features/state/stateSlice'
+import { fetchLabels } from '@/features/label/labelSlice'
+import { fetchProjectMembers } from '@/features/project/projectMembersSlice'
 import { fetchIssues } from '@/features/issue/issueSlice'
-import type { Issue, IssuePriority } from '@/types/issue'
+import { openCreateIssue } from '@/features/ui/uiSlice'
+import type { Issue, IssueFilters, IssuePriority } from '@/types/issue'
 
 // Helper to render linear-style priority icons
 function CustomPriorityIcon({ priority }: { priority: IssuePriority }) {
@@ -82,22 +85,26 @@ function IssueCard({
       
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-1.5 text-slate-500">
-          <Calendar className="size-3.5" />
-          <span className="text-[11px] font-medium">
-            {issue.due_date ? new Date(issue.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Tomorrow'}
-          </span>
-        </div>
-        
-        {/* Assignee Avatar */}
-        <div className="size-5 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center border border-[#1e1e20] ring-1 ring-white/5">
-          {issue.assignees?.[0]?.avatar_url ? (
-            <img src={issue.assignees[0].avatar_url} alt="Assignee" className="size-full object-cover" />
-          ) : issue.assignees?.[0]?.display_name ? (
-            <span className="text-[9px] font-bold text-white">{issue.assignees[0].display_name.slice(0, 2).toUpperCase()}</span>
-          ) : (
-            <img src={`https://i.pravatar.cc/150?u=${issue.id}`} alt="Assignee" className="size-full object-cover" />
+          {issue.due_date && (
+            <>
+              <Calendar className="size-3.5" />
+              <span className="text-[11px] font-medium">
+                {new Date(issue.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            </>
           )}
         </div>
+
+        {/* Assignee Avatar */}
+        {issue.assignees?.[0] && (
+          <div className="size-5 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center border border-[#1e1e20] ring-1 ring-white/5">
+            {issue.assignees[0].avatar_url ? (
+              <img src={issue.assignees[0].avatar_url} alt={issue.assignees[0].display_name} className="size-full object-cover" />
+            ) : (
+              <span className="text-[9px] font-bold text-white">{issue.assignees[0].display_name.slice(0, 2).toUpperCase()}</span>
+            )}
+          </div>
+        )}
       </div>
     </Link>
   )
@@ -106,39 +113,48 @@ function IssueCard({
 export default function IssuesListPage() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>()
   const dispatch = useAppDispatch()
-  
+
   const states = useAppSelector((state) => state.state.items)
   const statesLoading = useAppSelector((state) => state.state.isLoading)
   const issues = useAppSelector((state) => state.issue.items)
   const issuesLoading = useAppSelector((state) => state.issue.isLoading)
   const project = useAppSelector((s) => s.project.items.find((p) => p.id === projectId))
-  
+  const projectMembers = useAppSelector((state) => state.projectMembers.items)
+  const labels = useAppSelector((state) => state.label.items)
+
   const [search, setSearch] = useState('')
+  const [stateFilter, setStateFilter] = useState<string[]>([])
+  const [assigneeFilter, setAssigneeFilter] = useState<string[]>([])
+  const [labelFilter, setLabelFilter] = useState<string[]>([])
 
   useEffect(() => {
     if (!workspaceSlug || !projectId) return
     void dispatch(fetchStates({ workspaceSlug, projectId }))
+    void dispatch(fetchProjectMembers({ workspaceSlug, projectId }))
+    void dispatch(fetchLabels({ workspaceSlug, projectId }))
   }, [workspaceSlug, projectId, dispatch])
 
   useEffect(() => {
     if (!workspaceSlug || !projectId) return
     const handle = setTimeout(() => {
-      void dispatch(
-        fetchIssues({
-          workspaceSlug,
-          projectId,
-          filters: { search: search || undefined },
-        }),
-      )
+      const filters: IssueFilters = { search: search || undefined }
+      if (stateFilter.length > 0) filters.state = stateFilter
+      if (assigneeFilter.length > 0) filters.assignee = assigneeFilter
+      if (labelFilter.length > 0) filters.label = labelFilter
+      void dispatch(fetchIssues({ workspaceSlug, projectId, filters }))
     }, 300)
     return () => clearTimeout(handle)
-  }, [workspaceSlug, projectId, search, dispatch])
+  }, [workspaceSlug, projectId, search, stateFilter, assigneeFilter, labelFilter, dispatch])
 
   const columns = useMemo(() => {
     return [...states]
       .sort((a, b) => a.order - b.order)
       .map((s) => ({ state: s, issues: issues.filter((i) => i.state_id === s.id) }))
   }, [states, issues])
+
+  function toggle(list: string[], value: string, setList: (next: string[]) => void) {
+    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+  }
 
   if (!workspaceSlug || !projectId) return null
 
@@ -157,22 +173,68 @@ export default function IssuesListPage() {
         </div>
         
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 text-[13px] font-medium text-slate-300 bg-transparent border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition-colors">
-            <Filter className="size-3.5 text-slate-400" />
-            Status
-          </button>
-          <button className="flex items-center gap-2 text-[13px] font-medium text-slate-300 bg-transparent border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition-colors">
-            <User className="size-3.5 text-slate-400" />
-            Assignee
-          </button>
-          <button className="flex items-center gap-2 text-[13px] font-medium text-slate-300 bg-transparent border border-white/10 px-3 py-1.5 rounded hover:bg-white/5 transition-colors">
-            <Tag className="size-3.5 text-slate-400" />
-            Labels
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button className={`flex items-center gap-2 text-[13px] font-medium px-3 py-1.5 rounded border transition-colors ${stateFilter.length > 0 ? 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20' : 'text-slate-300 bg-transparent border-white/10 hover:bg-white/5'}`}>
+                  <Filter className="size-3.5" />
+                  Status{stateFilter.length > 0 ? ` (${stateFilter.length})` : ''}
+                </button>
+              }
+            />
+            <DropdownMenuContent className="bg-[#1a1a1c] border-white/10 text-slate-200">
+              {states.map((s) => (
+                <DropdownMenuItem key={s.id} onClick={() => toggle(stateFilter, s.id, setStateFilter)} closeOnClick={false}>
+                  <span className={`size-1.5 rounded-full ${stateFilter.includes(s.id) ? 'bg-indigo-400' : 'bg-white/20'}`} />
+                  {s.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button className={`flex items-center gap-2 text-[13px] font-medium px-3 py-1.5 rounded border transition-colors ${assigneeFilter.length > 0 ? 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20' : 'text-slate-300 bg-transparent border-white/10 hover:bg-white/5'}`}>
+                  <User className="size-3.5" />
+                  Assignee{assigneeFilter.length > 0 ? ` (${assigneeFilter.length})` : ''}
+                </button>
+              }
+            />
+            <DropdownMenuContent className="bg-[#1a1a1c] border-white/10 text-slate-200">
+              {projectMembers.length === 0 && <div className="px-2 py-1.5 text-xs text-slate-500">No members</div>}
+              {projectMembers.map((m) => (
+                <DropdownMenuItem key={m.user_id} onClick={() => toggle(assigneeFilter, m.user_id, setAssigneeFilter)} closeOnClick={false}>
+                  <span className={`size-1.5 rounded-full ${assigneeFilter.includes(m.user_id) ? 'bg-indigo-400' : 'bg-white/20'}`} />
+                  {m.user.display_name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button className={`flex items-center gap-2 text-[13px] font-medium px-3 py-1.5 rounded border transition-colors ${labelFilter.length > 0 ? 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20' : 'text-slate-300 bg-transparent border-white/10 hover:bg-white/5'}`}>
+                  <Tag className="size-3.5" />
+                  Labels{labelFilter.length > 0 ? ` (${labelFilter.length})` : ''}
+                </button>
+              }
+            />
+            <DropdownMenuContent className="bg-[#1a1a1c] border-white/10 text-slate-200">
+              {labels.length === 0 && <div className="px-2 py-1.5 text-xs text-slate-500">No labels</div>}
+              {labels.map((l) => (
+                <DropdownMenuItem key={l.id} onClick={() => toggle(labelFilter, l.id, setLabelFilter)} closeOnClick={false}>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: l.color }} />
+                  {l.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        
+
         <div className="flex-1" />
-        
+
         <div className="flex items-center text-[13px]">
           <span className="text-slate-500 mr-2">Sorted by</span>
           <span className="text-slate-300 font-medium">Manual</span>
@@ -224,7 +286,10 @@ export default function IssuesListPage() {
                         {stateIssues.length}
                       </span>
                     </div>
-                    <button className="text-slate-500 hover:text-slate-300 transition-colors p-1">
+                    <button
+                      onClick={() => dispatch(openCreateIssue({ projectId, stateId: state.id }))}
+                      className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+                    >
                       <Plus className="size-4" />
                     </button>
                   </div>

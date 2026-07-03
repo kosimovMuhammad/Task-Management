@@ -169,6 +169,16 @@
       "duplicates": "Duplicates"
     }
   },
+  "myTasks": {
+    "title": "My Tasks",
+    "subtitle": "Everything assigned to you across this workspace.",
+    "empty": "No tasks assigned to you yet.",
+    "open_one": "Open ({{count}})",
+    "open_other": "Open ({{count}})",
+    "noOpen": "You're all caught up.",
+    "completed_one": "Completed ({{count}})",
+    "completed_other": "Completed ({{count}})"
+  },
   "cycles": {
     "title": "Cycles",
     "subtitle": "Manage your team's iterative delivery process.",

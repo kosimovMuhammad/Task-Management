@@ -9,6 +9,9 @@ import stateReducer from '@/features/state/stateSlice'
 import labelReducer from '@/features/label/labelSlice'
 import issueReducer from '@/features/issue/issueSlice'
 import cycleReducer from '@/features/cycle/cycleSlice'
+import moduleReducer from '@/features/module/moduleSlice'
+import notificationReducer from '@/features/notification/notificationSlice'
+import inviteReducer from '@/features/invite/inviteSlice'
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +25,9 @@ export const store = configureStore({
     label: labelReducer,
     issue: issueReducer,
     cycle: cycleReducer,
+    module: moduleReducer,
+    notification: notificationReducer,
+    invite: inviteReducer,
   },
 })
 
