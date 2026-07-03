@@ -18,16 +18,39 @@ const initialState: AuthState = {
   error: null,
 }
 
-export const login = createAsyncThunk('auth/login', async (payload: LoginPayload) => {
-  const { data } = await apiClient.post<AuthTokens>('/auth/login', payload)
-  storeTokens(data)
-  return data.user
+import { isAxiosError } from 'axios'
+
+export const login = createAsyncThunk('auth/login', async (payload: LoginPayload, { rejectWithValue }) => {
+  try {
+    const { data } = await apiClient.post<AuthTokens>('/auth/login', payload)
+    storeTokens(data)
+    return data.user
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.data?.error?.message) {
+      return rejectWithValue(err.response.data.error.message)
+    }
+    return rejectWithValue('Login failed')
+  }
 })
 
-export const register = createAsyncThunk('auth/register', async (payload: RegisterPayload) => {
-  const { data } = await apiClient.post<AuthTokens>('/auth/register', payload)
-  storeTokens(data)
-  return data.user
+export const register = createAsyncThunk('auth/register', async (payload: RegisterPayload, { rejectWithValue }) => {
+  try {
+    const { data } = await apiClient.post<AuthTokens>('/auth/register', payload)
+    storeTokens(data)
+    return data.user
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.data?.error?.message) {
+      const details = err.response.data.error.details?.fieldErrors
+      if (details) {
+        const firstError = Object.values(details)[0]
+        if (Array.isArray(firstError) && firstError.length > 0) {
+           return rejectWithValue(`${err.response.data.error.message}: ${firstError[0]}`)
+        }
+      }
+      return rejectWithValue(err.response.data.error.message)
+    }
+    return rejectWithValue('Registration failed')
+  }
 })
 
 export const fetchMe = createAsyncThunk('auth/fetchMe', async () => {
@@ -87,11 +110,11 @@ const authSlice = createSlice({
       )
       .addMatcher(
         (action) => [login.rejected.type, register.rejected.type, fetchMe.rejected.type].includes(action.type),
-        (state, action: { error: { message?: string } }) => {
+        (state, action: any) => {
           state.isLoading = false
           state.isAuthenticated = false
           state.user = null
-          state.error = action.error.message ?? 'Authentication failed'
+          state.error = action.payload ?? action.error?.message ?? 'Authentication failed'
         },
       )
   },
