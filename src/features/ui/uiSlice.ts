@@ -6,6 +6,7 @@ export type Locale = 'en' | 'ru' | 'tj'
 interface UiState {
   theme: Theme
   locale: Locale
+  isSearchOpen: boolean
 }
 
 const THEME_KEY = 'theme'
@@ -26,6 +27,7 @@ function getInitialLocale(): Locale {
 const initialState: UiState = {
   theme: getInitialTheme(),
   locale: getInitialLocale(),
+  isSearchOpen: false,
 }
 
 const uiSlice = createSlice({
@@ -44,8 +46,14 @@ const uiSlice = createSlice({
       state.locale = action.payload
       localStorage.setItem(LOCALE_KEY, action.payload)
     },
+    setSearchOpen: (state, action: PayloadAction<boolean>) => {
+      state.isSearchOpen = action.payload
+    },
+    toggleSearch: (state) => {
+      state.isSearchOpen = !state.isSearchOpen
+    },
   },
 })
 
-export const { setTheme, toggleTheme, setLocale } = uiSlice.actions
+export const { setTheme, toggleTheme, setLocale, setSearchOpen, toggleSearch } = uiSlice.actions
 export default uiSlice.reducer

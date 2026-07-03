@@ -132,7 +132,13 @@
     "allPriorities": "All priorities",
     "searchPlaceholder": "Search issues...",
     "createError": "Could not create the issue.",
-    "updateError": "Could not update the issue."
+    "updateError": "Could not update the issue.",
+    "descriptionField": "Description",
+    "assignee": "Assignee",
+    "addLabel": "+ Add",
+    "parentIssue": "Parent Issue",
+    "parentSearchPlaceholder": "Search issues...",
+    "unassigned": "Unassigned"
   },
   "priority": {
     "none": "No priority",

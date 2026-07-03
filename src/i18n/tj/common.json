@@ -132,7 +132,13 @@
     "allPriorities": "Ҳамаи аввалиятҳо",
     "searchPlaceholder": "Ҷустуҷӯи вазифаҳо...",
     "createError": "Вазифа эҷод нашуд.",
-    "updateError": "Вазифа навсозӣ нашуд."
+    "updateError": "Вазифа навсозӣ нашуд.",
+    "descriptionField": "Тавсиф",
+    "assignee": "Иҷрокунанда",
+    "addLabel": "+ Илова кардан",
+    "parentIssue": "Вазифаи волидайн",
+    "parentSearchPlaceholder": "Ҷустуҷӯи вазифаҳо...",
+    "unassigned": "Таъин нашудааст"
   },
   "priority": {
     "none": "Бе аввалият",

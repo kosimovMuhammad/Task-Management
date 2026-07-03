@@ -132,7 +132,13 @@
     "allPriorities": "Все приоритеты",
     "searchPlaceholder": "Поиск задач...",
     "createError": "Не удалось создать задачу.",
-    "updateError": "Не удалось обновить задачу."
+    "updateError": "Не удалось обновить задачу.",
+    "descriptionField": "Описание",
+    "assignee": "Исполнитель",
+    "addLabel": "+ Добавить",
+    "parentIssue": "Родительская задача",
+    "parentSearchPlaceholder": "Поиск задач...",
+    "unassigned": "Не назначено"
   },
   "priority": {
     "none": "Без приоритета",

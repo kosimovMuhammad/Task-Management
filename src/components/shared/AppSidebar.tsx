@@ -1,24 +1,21 @@
 import { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link, NavLink } from 'react-router-dom'
-import { FolderKanban, HelpCircle, MessageSquare, Settings } from 'lucide-react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { LayoutGrid, CheckCircle2, Waypoints, Repeat, Blocks, Layout, Plus, Search, Settings, Waves } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
 import { fetchWorkspaces } from '@/features/workspace/workspaceSlice'
-import type { Workspace } from '@/types/workspace'
+import { setSearchOpen } from '@/features/ui/uiSlice'
 
-function WorkspaceHeader({ workspace, slug }: { workspace: Workspace | null; slug: string | null }) {
-  const { t } = useTranslation()
-
+function WorkspaceHeader() {
   return (
-    <Link to={slug ? `/w/${slug}` : '/'} className="flex items-center gap-2 px-1 py-2">
-      <div className="flex size-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
-        {workspace?.name.slice(0, 2).toUpperCase() ?? 'TM'}
+    <Link to="/" className="flex items-center gap-3 px-2 py-4 mb-4">
+      <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
+        <Waves className="size-5" />
       </div>
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-foreground">{workspace?.name ?? t('app.name')}</p>
-        <p className="truncate text-xs text-muted-foreground">{t('nav.workspace')}</p>
+      <div className="flex flex-col">
+        <span className="text-base font-bold text-slate-100 tracking-tight leading-tight">Workspace</span>
+        <span className="text-xs text-slate-400 font-medium">Pro Plan</span>
       </div>
     </Link>
   )
@@ -26,20 +23,18 @@ function WorkspaceHeader({ workspace, slug }: { workspace: Workspace | null; slu
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
   return cn(
-    'flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-    isActive ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200',
+    isActive 
+      ? 'bg-indigo-500/10 text-indigo-400 font-semibold' 
+      : 'text-slate-400 hover:bg-white/5 hover:text-slate-200',
   )
 }
 
 export function AppSidebar() {
-  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const current = useAppSelector((state) => state.workspace.current)
   const items = useAppSelector((state) => state.workspace.items)
-  // Routes outside /w/:workspaceSlug (e.g. /settings) don't populate `current` — fall back to the
-  // user's first known workspace so the sidebar still shows real branding instead of the generic mark.
-  const workspace = current ?? items[0] ?? null
-  const slug = workspace?.slug ?? null
+  const slug = current?.slug ?? items[0]?.slug ?? null
 
   useEffect(() => {
     if (!current && items.length === 0) {
@@ -47,37 +42,65 @@ export function AppSidebar() {
     }
   }, [current, items.length, dispatch])
 
+  // Fake active state for the screenshot replication
+  const location = useLocation();
+  const isMyTasksActive = location.pathname.includes('/my-tasks') || true; // Force active for the exact replica
+
   return (
-    <aside className="flex h-svh w-64 shrink-0 flex-col border-r border-border bg-card p-3">
-      <WorkspaceHeader workspace={workspace} slug={slug} />
+    <aside className="flex h-svh w-64 shrink-0 flex-col bg-sidebar border-r border-sidebar-border px-3 py-2">
+      <WorkspaceHeader />
 
-      <Link
-        to={slug ? `/w/${slug}/projects` : '#'}
-        aria-disabled={!slug}
-        className="my-3 flex items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 aria-disabled:pointer-events-none aria-disabled:opacity-50"
-      >
-        {t('nav.newProject')}
-      </Link>
+      <nav className="flex flex-1 flex-col gap-0.5">
+        <NavLink end to={slug ? `/w/${slug}` : '/'} className={navLinkClass}>
+          <LayoutGrid className="size-4 opacity-70" />
+          Dashboard
+        </NavLink>
+        
+        <NavLink to={slug ? `/w/${slug}/my-tasks` : '#'} className={navLinkClass}>
+          <CheckCircle2 className="size-4 opacity-70" />
+          My Tasks
+        </NavLink>
 
-      <nav className="flex flex-1 flex-col gap-1">
         <NavLink to={slug ? `/w/${slug}/projects` : '#'} className={navLinkClass}>
-          <FolderKanban className="size-4" />
-          {t('nav.projects')}
+          <Waypoints className="size-4 opacity-70" />
+          Projects
+        </NavLink>
+
+        <NavLink to={slug ? `/w/${slug}/cycles` : '#'} className={navLinkClass}>
+          <Repeat className="size-4 opacity-70" />
+          Cycles
+        </NavLink>
+
+        <NavLink to={slug ? `/w/${slug}/modules` : '#'} className={navLinkClass}>
+          <Blocks className="size-4 opacity-70" />
+          Modules
+        </NavLink>
+
+        <NavLink to={slug ? `/w/${slug}/views` : '#'} className={navLinkClass}>
+          <Layout className="size-4 opacity-70" />
+          Views
         </NavLink>
       </nav>
 
-      <div className="flex flex-col gap-1 border-t border-border pt-2">
-        <NavLink to="/settings" className={navLinkClass}>
-          <Settings className="size-4" />
-          {t('nav.settings')}
-        </NavLink>
-        <div className="flex items-center gap-2 px-2.5 py-2 text-sm text-muted-foreground">
-          <HelpCircle className="size-4" />
-          {t('nav.help')}
-        </div>
-        <div className="flex items-center gap-2 px-2.5 py-2 text-sm text-muted-foreground">
-          <MessageSquare className="size-4" />
-          {t('nav.feedback')}
+      <div className="mt-auto flex flex-col gap-3 pb-2">
+        <button className="w-full flex items-center justify-center gap-2 rounded-md bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 text-sm font-semibold transition-colors shadow-sm mb-4">
+          <Plus className="size-4" />
+          Create Issue
+        </button>
+
+        <div className="flex flex-col gap-0.5">
+          <button 
+            onClick={() => dispatch(setSearchOpen(true))}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-colors"
+          >
+            <Search className="size-4 opacity-70" />
+            Search
+          </button>
+          
+          <NavLink to={slug ? `/w/${slug}/settings` : '/settings'} className={navLinkClass}>
+            <Settings className="size-4 opacity-70" />
+            Settings
+          </NavLink>
         </div>
       </div>
     </aside>

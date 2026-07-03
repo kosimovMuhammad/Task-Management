@@ -1,16 +1,22 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactElement } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import {
   AlertTriangle,
+  Bold,
   CheckCircle2,
   Download,
   FolderKanban,
+  Italic,
+  List,
   ListTodo,
+  Plus,
   PlusCircle,
+  Search,
   Sparkles,
   UserPlus,
   UserRound,
+  X,
 } from 'lucide-react'
 import { apiClient } from '@/lib/apiClient'
 import { downloadCsv } from '@/lib/csvExport'
@@ -18,6 +24,7 @@ import { formatRelativeTime } from '@/lib/formatRelativeTime'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Dialog,
@@ -33,10 +40,79 @@ import { PriorityIcon } from '@/components/shared/PriorityIcon'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useAppSelector } from '@/hooks/useAppSelector'
 import { fetchWorkspaceMembers } from '@/features/workspace/workspaceMembersSlice'
+import { fetchProjectMembers } from '@/features/project/projectMembersSlice'
+import { fetchLabels } from '@/features/label/labelSlice'
 import { createIssue } from '@/features/issue/issueSlice'
-import type { Issue, IssueListResponse } from '@/types/issue'
+import type { Issue, IssueListResponse, IssuePriority } from '@/types/issue'
 import type { IssueState } from '@/types/state'
 import type { Project } from '@/types/project'
+
+const PRIORITIES: IssuePriority[] = ['urgent', 'high', 'medium', 'low', 'none']
+const UNASSIGNED = 'unassigned'
+
+function DescriptionToolbar({
+  textareaRef,
+  value,
+  onChange,
+}: {
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  value: string
+  onChange: (next: string) => void
+}) {
+  const wrapSelection = (marker: string) => {
+    const el = textareaRef.current
+    if (!el) return
+    const { selectionStart: start, selectionEnd: end } = el
+    const next = `${value.slice(0, start)}${marker}${value.slice(start, end)}${marker}${value.slice(end)}`
+    onChange(next)
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(start + marker.length, end + marker.length)
+    })
+  }
+
+  const prefixLine = (prefix: string) => {
+    const el = textareaRef.current
+    if (!el) return
+    const start = el.selectionStart
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1
+    const next = `${value.slice(0, lineStart)}${prefix}${value.slice(lineStart)}`
+    onChange(next)
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(start + prefix.length, start + prefix.length)
+    })
+  }
+
+  return (
+    <div className="flex items-center gap-0.5 rounded-t-lg border border-b-0 border-input px-1.5 py-1">
+      <button
+        type="button"
+        onClick={() => wrapSelection('**')}
+        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+        aria-label="Bold"
+      >
+        <Bold className="size-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => wrapSelection('*')}
+        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+        aria-label="Italic"
+      >
+        <Italic className="size-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => prefixLine('- ')}
+        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+        aria-label="List"
+      >
+        <List className="size-3.5" />
+      </button>
+    </div>
+  )
+}
 
 function useGreeting() {
   const { t } = useTranslation()
@@ -141,12 +217,25 @@ function QuickCreateTaskDialog({
 }) {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
+  const user = useAppSelector((state) => state.auth.user)
+  const labels = useAppSelector((state) => state.label.items)
+  const projectMembers = useAppSelector((state) => state.projectMembers.items)
+  const descriptionRef = useRef<HTMLTextAreaElement>(null)
+
   const [open, setOpen] = useState(false)
   const [projectId, setProjectId] = useState('')
   const [states, setStates] = useState<IssueState[]>([])
   const [statesLoading, setStatesLoading] = useState(false)
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [stateId, setStateId] = useState('')
+  const [priority, setPriority] = useState<IssuePriority>('medium')
+  const [estimate, setEstimate] = useState('')
+  const [labelIds, setLabelIds] = useState<string[]>([])
+  const [assigneeId, setAssigneeId] = useState(UNASSIGNED)
+  const [parentQuery, setParentQuery] = useState('')
+  const [parentResults, setParentResults] = useState<Issue[]>([])
+  const [parentIssue, setParentIssue] = useState<Issue | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -164,7 +253,46 @@ function QuickCreateTaskDialog({
         setStateId(res.data.find((s) => s.is_default)?.id ?? res.data[0]?.id ?? '')
       })
       .finally(() => setStatesLoading(false))
-  }, [workspaceSlug, projectId])
+    void dispatch(fetchLabels({ workspaceSlug, projectId }))
+    void dispatch(fetchProjectMembers({ workspaceSlug, projectId }))
+    setLabelIds([])
+    setParentIssue(null)
+    setParentQuery('')
+  }, [workspaceSlug, projectId, dispatch])
+
+  useEffect(() => {
+    if (user && projectMembers.some((m) => m.user_id === user.id)) setAssigneeId(user.id)
+  }, [user, projectMembers])
+
+  useEffect(() => {
+    if (!projectId || !parentQuery.trim()) {
+      setParentResults([])
+      return
+    }
+    const handle = setTimeout(() => {
+      apiClient
+        .get<IssueListResponse>(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/`, {
+          params: { search: parentQuery, limit: 5 },
+        })
+        .then((res) => setParentResults(res.data.data))
+    }, 300)
+    return () => clearTimeout(handle)
+  }, [workspaceSlug, projectId, parentQuery])
+
+  const toggleLabel = (labelId: string) => {
+    setLabelIds((ids) => (ids.includes(labelId) ? ids.filter((id) => id !== labelId) : [...ids, labelId]))
+  }
+
+  const resetForm = () => {
+    setTitle('')
+    setDescription('')
+    setPriority('medium')
+    setEstimate('')
+    setLabelIds([])
+    setAssigneeId(UNASSIGNED)
+    setParentIssue(null)
+    setParentQuery('')
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -172,9 +300,24 @@ function QuickCreateTaskDialog({
     setError(null)
     setIsSubmitting(true)
     try {
-      await dispatch(createIssue({ workspaceSlug, projectId, payload: { title, state_id: stateId } })).unwrap()
+      await dispatch(
+        createIssue({
+          workspaceSlug,
+          projectId,
+          payload: {
+            title,
+            description: description.trim() || undefined,
+            state_id: stateId,
+            priority,
+            parent_id: parentIssue?.id ?? undefined,
+            assignee_ids: assigneeId !== UNASSIGNED ? [assigneeId] : undefined,
+            label_ids: labelIds.length > 0 ? labelIds : undefined,
+            estimate_points: estimate.trim() ? Number(estimate) : undefined,
+          },
+        }),
+      ).unwrap()
       setOpen(false)
-      setTitle('')
+      resetForm()
     } catch {
       setError(t('issues.createError'))
     } finally {
@@ -185,53 +328,198 @@ function QuickCreateTaskDialog({
   if (projects.length === 0) return null
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (!next) resetForm()
+      }}
+    >
       <DialogTrigger render={trigger} />
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('issues.createTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('dashboard.project')}</label>
-            <Select value={projectId} onValueChange={(v) => v && setProjectId(v)}>
-              <SelectTrigger className="w-full">
-                <SelectValue>{(v: string) => projects.find((p) => p.id === v)?.name ?? v}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-1.5">
             <label htmlFor="quick-task-title" className="text-sm font-medium">
               {t('issues.titleField')}
             </label>
             <Input id="quick-task-title" required value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
+
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">{t('issues.state')}</label>
-            <Select
-              value={stateId}
-              onValueChange={(v) => v && setStateId(v)}
-              disabled={statesLoading || states.length === 0}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue>{(v: string) => states.find((s) => s.id === v)?.name ?? v}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {states.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium">{t('issues.descriptionField')}</label>
+            <DescriptionToolbar textareaRef={descriptionRef} value={description} onChange={setDescription} />
+            <Textarea
+              ref={descriptionRef}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="min-h-24 rounded-t-none"
+            />
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('dashboard.project')}</label>
+              <Select value={projectId} onValueChange={(v) => v && setProjectId(v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue>{(v: string) => projects.find((p) => p.id === v)?.name ?? v}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('issueDetail.estimate')}</label>
+              <Input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                value={estimate}
+                onChange={(e) => setEstimate(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('issues.state')}</label>
+              <Select
+                value={stateId}
+                onValueChange={(v) => v && setStateId(v)}
+                disabled={statesLoading || states.length === 0}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>{(v: string) => states.find((s) => s.id === v)?.name ?? v}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {states.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('issues.priority')}</label>
+              <Select value={priority} onValueChange={(v) => v && setPriority(v as IssuePriority)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {(v: IssuePriority) => (
+                      <span className="flex items-center gap-1.5">
+                        <PriorityIcon priority={v} />
+                        {t(`priority.${v}`)}
+                      </span>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {t(`priority.${p}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('issueDetail.labels')}</label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {labelIds.map((id) => {
+                  const label = labels.find((l) => l.id === id)
+                  if (!label) return null
+                  return (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1 rounded bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+                    >
+                      {label.name}
+                      <button type="button" onClick={() => toggleLabel(id)} aria-label={t('common.delete')}>
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  )
+                })}
+                <Select value={labelIds} onValueChange={(v) => setLabelIds(v ?? [])} multiple>
+                  <SelectTrigger size="sm" className="gap-1 px-2 text-xs">
+                    <Plus className="size-3" />
+                    {t('issues.addLabel')}
+                  </SelectTrigger>
+                  <SelectContent>
+                    {labels.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        <span className="size-2 rounded-full" style={{ backgroundColor: l.color }} />
+                        {l.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">{t('issues.assignee')}</label>
+              <Select value={assigneeId} onValueChange={(v) => v && setAssigneeId(v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {(v: string) => projectMembers.find((m) => m.user_id === v)?.user.display_name ?? t('issues.unassigned')}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={UNASSIGNED}>{t('issues.unassigned')}</SelectItem>
+                  {projectMembers.map((m) => (
+                    <SelectItem key={m.user_id} value={m.user_id}>
+                      {m.user.display_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="relative space-y-1.5">
+            <label className="text-sm font-medium">{t('issues.parentIssue')}</label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={parentIssue ? parentIssue.title : parentQuery}
+                onChange={(e) => {
+                  setParentIssue(null)
+                  setParentQuery(e.target.value)
+                }}
+                placeholder={t('issues.parentSearchPlaceholder')}
+                className="pl-8"
+              />
+            </div>
+            {!parentIssue && parentQuery.trim() && parentResults.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-border bg-popover shadow-md">
+                {parentResults.map((issue) => (
+                  <button
+                    type="button"
+                    key={issue.id}
+                    className="block w-full truncate px-3 py-2 text-left text-sm hover:bg-muted"
+                    onClick={() => {
+                      setParentIssue(issue)
+                      setParentQuery('')
+                    }}
+                  >
+                    {issue.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting || !stateId}>

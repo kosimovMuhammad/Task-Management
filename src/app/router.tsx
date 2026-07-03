@@ -27,6 +27,7 @@ const UserSettingsNotificationsPage = lazy(() => import('@/pages/UserSettingsNot
 const UserSettingsSecurityPage = lazy(() => import('@/pages/UserSettingsSecurityPage'))
 const UserSettingsWorkspacePage = lazy(() => import('@/pages/UserSettingsWorkspacePage'))
 const UserSettingsBillingPage = lazy(() => import('@/pages/UserSettingsBillingPage'))
+const WorkspaceSettingsPage = lazy(() => import('@/pages/WorkspaceSettingsPage'))
 
 function SuspenseLayout() {
   return (
@@ -74,7 +75,9 @@ export const router = createBrowserRouter([
                 element: <WorkspaceScope />,
                 children: [
                   { index: true, element: <DashboardPage /> },
+                  { path: 'my-tasks', element: <IssueDetailPage /> },
                   { path: 'projects', element: <ProjectsListPage /> },
+                  { path: 'settings', element: <WorkspaceSettingsPage /> },
                   {
                     path: 'p/:projectId',
                     children: [

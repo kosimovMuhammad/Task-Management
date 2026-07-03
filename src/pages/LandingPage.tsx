@@ -6,6 +6,8 @@ import { useAppSelector } from '@/hooks/useAppSelector'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { setLocale, toggleTheme, type Locale } from '@/features/ui/uiSlice'
 import { Logo } from '@/components/shared/Logo'
+import { InteractiveBackground } from '@/components/shared/InteractiveBackground'
+import { LandingFooter } from '@/components/shared/LandingFooter'
 import './LandingPage.css'
 
 const LOCALES: Locale[] = ['en', 'ru', 'tj']
@@ -56,6 +58,7 @@ export default function LandingPage() {
 
   return (
     <div className={`landing-page ${theme === 'light' ? 'theme-light' : ''}`}>
+      <InteractiveBackground />
       <div className="landing-content">
 
         {/* ── Navbar ── */}
@@ -122,7 +125,7 @@ export default function LandingPage() {
             >
               <div className="landing-hero-glow-bg multi-color-glow" />
               <div className="landing-hero-image-container">
-                <img src="https://png.pngtree.com/thumb_back/fw800/background/20250116/pngtree-digital-weather-display-technology-meteorology-image_16919924.jpg" alt="Nexus PM Dashboard" className="landing-hero-img" />
+                <img src="https://pic3.zhimg.com/v2-14904ba3317eb377534088ba44533c4a_r.jpg" alt="Nexus PM Dashboard" className="landing-hero-img" />
               </div>
             </div>
           </div>
@@ -169,7 +172,7 @@ export default function LandingPage() {
                 <div className="hiw-step-icon"><UserPlus className="size-5" /></div>
               </div>
               <h3 className="hiw-step-title">Аккаунт созед</h3>
-              <p className="hiw-step-desc">Дар сонияҳо ба қайд гиред. Корти бонкӣ лозим нест. Маълумот бо имконияти ҳамоҳангсозии абрӣ дар дастгоҳ мемонад.</p>
+              <p className="hiw-step-desc">Дар сонияҳо ба қайд гиред ва фазои кории худро (Workspace) созед. Лоиҳаҳои худро ба осонӣ ташкил намоед.</p>
             </div>
 
             <div className="hiw-step-card">
@@ -177,8 +180,8 @@ export default function LandingPage() {
                 <span className="hiw-step-number">02</span>
                 <div className="hiw-step-icon"><FileText className="size-5" /></div>
               </div>
-              <h3 className="hiw-step-title">Қарзҳоро илова кунед</h3>
-              <p className="hiw-step-desc">Қарзҳоро бо тамосҳо, маблағҳо, санаҳо ва қайдҳо сабт кунед. Барои осонӣ онҳоро дар ҷузвдонҳо ташкил кунед.</p>
+              <h3 className="hiw-step-title">Вазифаҳо илова кунед</h3>
+              <p className="hiw-step-desc">Вазифаҳоро (Tasks) бо тафсилот, муҳлатҳо ва масъулон сабт кунед. Барои осонӣ онҳоро дар лоиҳаҳои мухталиф ҷойгир кунед.</p>
             </div>
 
             <div className="hiw-step-card">
@@ -187,7 +190,7 @@ export default function LandingPage() {
                 <div className="hiw-step-icon"><LineChart className="size-5" /></div>
               </div>
               <h3 className="hiw-step-title">Пешрафтро пайгирӣ кунед</h3>
-              <p className="hiw-step-desc">Пардохтҳоро назорат кунед, таҳлилҳоро бинед ва дар бораи муносибатҳои молиявии худ маълумот гиред.</p>
+              <p className="hiw-step-desc">Ҳолати вазифаҳоро назорат кунед. Рафти иҷрои лоиҳаро бо таҳлилҳои дақиқ ва дашбордҳо (Dashboards) пайгирӣ намоед.</p>
             </div>
 
             <div className="hiw-step-card">
@@ -195,8 +198,8 @@ export default function LandingPage() {
                 <span className="hiw-step-number">04</span>
                 <div className="hiw-step-icon"><CheckCircle className="size-5" /></div>
               </div>
-              <h3 className="hiw-step-title">Муташаккил бошед</h3>
-              <p className="hiw-step-desc">Қарзҳоро ҳамчун пардохтшуда қайд кунед, ҳисоботҳоро содир кунед ва ҳисоби дақиқи амалиётҳоро пеш баред.</p>
+              <h3 className="hiw-step-title">Дастаҷамъона кор кунед</h3>
+              <p className="hiw-step-desc">Аъзоёни дастаро даъват кунед, вазифаҳоро тақсим намоед ва бо ҳамкорони худ дар вақти воқеӣ (Real-time) кор кунед.</p>
             </div>
           </div>
         </section>
@@ -290,36 +293,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Footer ── */}
-        <footer className="landing-complex-footer">
-          <div className="footer-brand">
-            <Logo size={28} />
-            <p className="footer-tagline">Designed for the future of work.</p>
-          </div>
-          <div className="footer-links-grid">
-            <div className="footer-column">
-              <h4>Product</h4>
-              <Link to="/">Features</Link>
-              <Link to="/">Integrations</Link>
-              <Link to="/">Pricing</Link>
-              <Link to="/">Changelog</Link>
-            </div>
-            <div className="footer-column">
-              <h4>Resources</h4>
-              <Link to="/">Documentation</Link>
-              <Link to="/">API Reference</Link>
-              <Link to="/">Blog</Link>
-              <Link to="/">Community</Link>
-            </div>
-            <div className="footer-column">
-              <h4>Company</h4>
-              <Link to="/">About</Link>
-              <Link to="/">Careers</Link>
-              <Link to="/">Contact</Link>
-              <Link to="/">Privacy Policy</Link>
-            </div>
-          </div>
-        </footer>
+        <LandingFooter />
 
       </div>
     </div>
